@@ -84,38 +84,51 @@ export async function exportPdf(result, stockItems, cutPieces, params) {
 
   y = 21;
 
-  // ═══════════════════════════════════════════════════════════
-  // ÖZET KUTUSU (Kompakt 2 satır)
-  // ═══════════════════════════════════════════════════════════
+  const hasCost = (result.totalCost && result.totalCost > 0) || (params.cutCost && params.cutCost > 0);
+  const boxHeight = hasCost ? 24 : 18;
+
   doc.setFillColor(245, 245, 252);
   doc.setDrawColor(200, 200, 220);
-  doc.roundedRect(margin, y, contentW, 18, 1.5, 1.5, 'FD');
+  doc.roundedRect(margin, y, contentW, boxHeight, 1.5, 1.5, 'FD');
 
   doc.setTextColor(40, 40, 40);
   doc.setFontSize(7.5);
   doc.setFont(PDF_FONT, 'bold');
 
-  // Üst satır: Stok ve Fire Oranı
+  // Satır 1: Stok ve Fire Oranı
   const row1 = [
     `${t('results.totalStock')}: ${result.totalStockUsed} ${t('results.pieces')}`,
     `${t('results.wastePercentage')}: %${result.totalWastePercentage.toFixed(1)}`,
   ];
   const row1ColW = contentW / row1.length;
   row1.forEach((text, idx) => {
-    doc.text(text, margin + row1ColW * idx + row1ColW / 2, y + 6.5, { align: 'center' });
+    doc.text(text, margin + row1ColW * idx + row1ColW / 2, y + 6, { align: 'center' });
   });
 
-  // Alt satır: Toplam Fire ve Testere Payı
+  // Satır 2: Toplam Fire ve Testere Payı
   const row2 = [
     `${t('results.totalWaste')}: ${units.format(result.totalWaste)}`,
     `${t('params.kerfWidth')}: ${units.format(params.kerfWidth)}`,
   ];
   const row2ColW = contentW / row2.length;
   row2.forEach((text, idx) => {
-    doc.text(text, margin + row2ColW * idx + row2ColW / 2, y + 13.5, { align: 'center' });
+    doc.text(text, margin + row2ColW * idx + row2ColW / 2, y + (hasCost ? 12 : 13), { align: 'center' });
   });
 
-  y += 22;
+  // Satır 3: Maliyet Detayı (varsa)
+  if (hasCost) {
+    const currency = t('common.currency');
+    const row3 = [
+      `${t('results.totalCuts')}: ${result.totalCuts || 0} ${t('results.pieces')}`,
+      `${t('results.totalCost')}: ${result.totalCost.toFixed(2)} ${currency} (${t('results.materialCost')}: ${result.totalMaterialCost.toFixed(2)} | ${t('results.cuttingCost')}: ${result.totalCuttingCost.toFixed(2)})`,
+    ];
+    const row3ColW = contentW / row3.length;
+    row3.forEach((text, idx) => {
+      doc.text(text, margin + row3ColW * idx + row3ColW / 2, y + 18, { align: 'center' });
+    });
+  }
+
+  y += boxHeight + 4;
 
   // ═══════════════════════════════════════════════════════════
   // LEJANT (Renk → Parça Eşleştirmesi)

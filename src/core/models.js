@@ -51,6 +51,7 @@ export function createOptimizationParams(overrides = {}) {
   return {
     kerfWidth: 3,          // mm (testere payı)
     minUsableRemnant: 200, // mm
+    cutCost: 0,            // Kesim başı maliyet
     algorithm: 'bfd',      // 'ffd' | 'bfd' | 'branchBound'
     ...overrides,
   };

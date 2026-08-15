@@ -43,6 +43,14 @@ export function renderParamsPanel(container, params, onChange) {
           </div>
 
           <div class="form-group">
+            <label class="form-label" for="cut-cost-input">${t('params.cutCost')} (${t('common.currency')})</label>
+            <input type="number" id="cut-cost-input" class="form-input" 
+                   value="${params.cutCost || 0}" 
+                   min="0" step="any">
+            <span class="form-hint">${t('params.cutCostHint')}</span>
+          </div>
+
+          <div class="form-group">
             <label class="form-label" for="algo-select">${t('params.algorithm')}</label>
             <select id="algo-select" class="form-input">
               <option value="ffd" ${params.algorithm === 'ffd' ? 'selected' : ''}>
@@ -71,6 +79,11 @@ export function renderParamsPanel(container, params, onChange) {
 
     container.querySelector('#remnant-input')?.addEventListener('change', (e) => {
       params.minUsableRemnant = units.toMM(Number(e.target.value));
+      onChange(params);
+    });
+
+    container.querySelector('#cut-cost-input')?.addEventListener('change', (e) => {
+      params.cutCost = Math.max(0, Number(e.target.value) || 0);
       onChange(params);
     });
 

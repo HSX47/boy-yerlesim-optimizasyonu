@@ -68,17 +68,20 @@ export function renderResultsPanel(container, result, callbacks = {}) {
           </div>
 
           <div class="stat-card">
-            <div class="stat-card__label">${t('results.totalCost')}</div>
-            <div class="stat-card__value stat-card__value--info">
-              ${result.totalCost > 0 ? result.totalCost.toFixed(2) : '—'}
+            <div class="stat-card__label">${t('results.totalCuts')}</div>
+            <div class="stat-card__value stat-card__value--primary">
+              ${result.totalCuts || 0}
             </div>
-            <div class="stat-card__sub">${result.totalCost > 0 ? currency : ''}</div>
+            <div class="stat-card__sub">${t('results.pieces')}</div>
           </div>
 
           <div class="stat-card">
-            <div class="stat-card__label">${t('results.executionTime')}</div>
-            <div class="stat-card__value stat-card__value--primary">
-              ${result.executionTimeMs < 1000 ? result.executionTimeMs + 'ms' : (result.executionTimeMs / 1000).toFixed(2) + 's'}
+            <div class="stat-card__label">${t('results.totalCost')}</div>
+            <div class="stat-card__value stat-card__value--info">
+              ${result.totalCost > 0 ? result.totalCost.toFixed(2) + ' ' + currency : '—'}
+            </div>
+            <div class="stat-card__sub">
+              ${result.totalCost > 0 ? `${t('results.materialCost')}: ${result.totalMaterialCost.toFixed(2)} ${currency} | ${t('results.cuttingCost')}: ${result.totalCuttingCost.toFixed(2)} ${currency}` : ''}
             </div>
           </div>
         </div>

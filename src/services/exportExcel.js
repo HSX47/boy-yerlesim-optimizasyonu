@@ -24,14 +24,18 @@ export function exportExcel(result, stockItems, cutPieces, params) {
     [],
     [t('results.summary')],
     [t('results.totalStock'), result.totalStockUsed, t('results.pieces')],
+    [t('results.totalCuts'), result.totalCuts || 0, t('results.pieces')],
     [t('results.wastePercentage'), `%${result.totalWastePercentage.toFixed(1)}`],
     [t('results.totalWaste'), units.fromMM(result.totalWaste), unitLabel],
     [t('results.totalCost'), result.totalCost > 0 ? result.totalCost.toFixed(2) : '—', result.totalCost > 0 ? t('common.currency') : ''],
+    [t('results.materialCost'), result.totalMaterialCost ? result.totalMaterialCost.toFixed(2) : '0.00', t('common.currency')],
+    [t('results.cuttingCost'), result.totalCuttingCost ? result.totalCuttingCost.toFixed(2) : '0.00', t('common.currency')],
     [t('results.executionTime'), `${result.executionTimeMs}ms`],
     [],
     [t('params.title')],
     [t('params.kerfWidth'), units.fromMM(params.kerfWidth), unitLabel],
     [t('params.minRemnant'), units.fromMM(params.minUsableRemnant), unitLabel],
+    [t('params.cutCost'), params.cutCost || 0, t('common.currency')],
     [t('params.algorithm'), params.algorithm === 'bfd' ? t('params.algorithmBFD') : t('params.algorithmFFD')],
   ];
 

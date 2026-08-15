@@ -138,7 +138,12 @@ function buildResult(bars, params, unplacedCount = 0) {
 
   const totalStockLength = patterns.reduce((s, p) => s + p.stockItem.length, 0);
   const totalWaste = patterns.reduce((s, p) => s + p.wasteLength, 0);
-  const totalCost = patterns.reduce((s, p) => s + p.stockItem.unitPrice, 0);
+  
+  const totalMaterialCost = patterns.reduce((s, p) => s + (p.stockItem.unitPrice || 0), 0);
+  const totalCuts = patterns.reduce((s, p) => s + p.cuts.length, 0);
+  const cutCost = params.cutCost || 0;
+  const totalCuttingCost = totalCuts * cutCost;
+  const totalCost = totalMaterialCost + totalCuttingCost;
 
   // Kullanılabilir artıkları grupla
   const remnantMap = new Map();
@@ -157,6 +162,9 @@ function buildResult(bars, params, unplacedCount = 0) {
     totalStockUsed: patterns.length,
     totalWaste,
     totalWastePercentage: totalStockLength > 0 ? (totalWaste / totalStockLength) * 100 : 0,
+    totalMaterialCost,
+    totalCuts,
+    totalCuttingCost,
     totalCost,
     usableRemnants,
     unplacedCount,
