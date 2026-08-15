@@ -226,13 +226,13 @@ Sonuç objesi (`OptimizationResult`) her zaman aynı şekli döndürür.
 - Koyu ve açık tema
 - Türkçe ve İngilizce arayüz (genişletilebilir i18n)
 - Metrik ve Imperial birim sistemi
-- Stok giriş paneli (hızlı ekleme + manuel)
+- Stok giriş paneli (hızlı ekleme + manuel, Boy Fiyatı desteği)
 - Kesim listesi paneli (Excel'den yapıştır dahil)
-- Optimizasyon parametreleri paneli
+- Optimizasyon parametreleri paneli (Kesim Başı Maliyet parametresi dahil)
 - SVG kesim diyagramı (renk kodlu)
-- Sonuç paneli (istatistik kartları + detaylı plan)
-- PDF rapor dışa aktarım (dikey A4, Inter Türkçe font, bileşik çubuk kartları, sıfır alt boşluk kaybı)
-- Excel rapor dışa aktarım (3 sayfa)
+- Sonuç paneli (istatistik kartları, Malzeme + Kesim İşçilik maliyet detayları)
+- PDF rapor dışa aktarım (dikey A4, Inter Türkçe font, 2 sütunlu çubuk kartları, maliyet detaylı)
+- Excel rapor dışa aktarım (3 sayfa, maliyet detaylı)
 - Toast bildirim sistemi
 - Stok miktar yetersizliği / sığmayan parça tespit sistemi ve kırmızı uyarı banner'ı
 
