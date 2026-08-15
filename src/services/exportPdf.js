@@ -2,8 +2,9 @@
  * PDF Dışa Aktarım — jsPDF ile kesim planı raporu
  * 
  * DİKEY (portrait) A4 sayfa.
- * Her çubuk için renkli ince kesim diyagramı + altında detay tablosu (Bileşik Kart Yapısı).
- * Sayfa alanı %90+ verimle kullanılır, gereksiz sayfa altı boşlukları ve taşmalar engellenir.
+ * Her çubuk için 2 SÜTUNLU (Side-by-Side) kompakt kart düzeni.
+ * Sol ve sağ sütunlarda renkli ince kesim diyagramı + dar detay tablosu.
+ * Sayfa genişliği tam doldurulur, tablodaki gereksiz yatay boşluklar giderilir.
  * Inter Türkçe TTF fontu entegre edilmiştir.
  */
 
@@ -47,8 +48,8 @@ export async function exportPdf(result, stockItems, cutPieces, params) {
   const pageW = doc.internal.pageSize.getWidth();   // 210
   const pageH = doc.internal.pageSize.getHeight();   // 297
   const margin = 10;
-  const contentW = pageW - margin * 2;
-  const footerMargin = 12;
+  const contentW = pageW - margin * 2;              // 190
+  const footerMargin = 10;
   let y = 0;
 
   // ── Renk haritası oluştur ──
@@ -173,7 +174,7 @@ export async function exportPdf(result, stockItems, cutPieces, params) {
   y += (legendRow + 1) * 4.5 + 3;
 
   // ═══════════════════════════════════════════════════════════
-  // KESİM PLANI (Çubuk Kartları: Görsel Bar + Altında Tablo)
+  // KESİM PLANI (2 SÜTUNLU KART DÜZENİ)
   // ═══════════════════════════════════════════════════════════
   doc.setFontSize(8.5);
   doc.setFont(PDF_FONT, 'bold');
@@ -182,19 +183,21 @@ export async function exportPdf(result, stockItems, cutPieces, params) {
   y += 4.5;
 
   const unitLabel = units.primaryUnit;
-  const rowH = 4.5;
-  const headerH = 5;
-  const barHeight = 4.5;
+  const colGap = 8;
+  const cardW = Math.floor((contentW - colGap) / 2); // (190 - 8) / 2 = 91mm
+  const rowH = 4.2;
+  const headerH = 4.8;
+  const barHeight = 4.2;
 
-  // Tablo sütun tanımları
+  // Sütun genişlikleri (91mm içinde)
   const cols = [
-    { label: i18n.locale === 'tr' ? 'Parça Adı' : 'Part Name', w: Math.floor(contentW * 0.40) },
-    { label: `${i18n.locale === 'tr' ? 'Boy' : 'Length'} (${unitLabel})`, w: Math.floor(contentW * 0.35) },
-    { label: i18n.locale === 'tr' ? 'Adet' : 'Qty', w: contentW - Math.floor(contentW * 0.40) - Math.floor(contentW * 0.35) },
+    { label: i18n.locale === 'tr' ? 'Parça Adı' : 'Part Name', w: 36 },
+    { label: `${i18n.locale === 'tr' ? 'Boy' : 'Length'} (${unitLabel})`, w: 35 },
+    { label: i18n.locale === 'tr' ? 'Adet' : 'Qty', w: 20 },
   ];
 
-  for (const [pIdx, pattern] of result.patterns.entries()) {
-    // ── Parçaları grupla ──
+  // Parçaları gruplama yardımcısı
+  const getGroupedParts = (pattern) => {
     const partGroups = new Map();
     for (const cut of pattern.cuts) {
       const key = (cut.piece.label || '') + '|' + cut.piece.length;
@@ -208,185 +211,214 @@ export async function exportPdf(result, stockItems, cutPieces, params) {
         });
       }
     }
-    const parts = [...partGroups.values()];
+    return [...partGroups.values()];
+  };
 
-    // Toplam kart yüksekliği hesapla: Başlık(5.5) + Bar(4.5+1.5) + TabloHeader(5) + Satırlar(parts.length * 4.5) + (Fire/Artık satırları * 4.5) + Boşluk(3)
+  // Kart Yüksekliği Hesaplama
+  const getCardHeight = (pattern) => {
+    const parts = getGroupedParts(pattern);
     const extraRows = (pattern.wasteLength > 0 ? 1 : 0) + (pattern.usableRemnant > 0 ? 1 : 0);
-    const cardHeight = 5.5 + (barHeight + 1.5) + headerH + (parts.length + extraRows) * rowH + 4;
+    return 5.2 + (barHeight + 1.2) + headerH + (parts.length + extraRows) * rowH + 2.5;
+  };
 
-    // Sayfa Taşma Kontrolü — Kart bütünüyle sığmıyorsa yeni sayfaya geç
-    if (y + cardHeight > pageH - footerMargin) {
-      addFooter(doc, pageW, pageH, margin, t);
-      doc.addPage();
-      await registerPdfFont(doc);
-      y = margin + 2;
-    }
+  // Tek Bir Çubuk Kartını Çizme Fonksiyonu
+  const drawCard = (pattern, barIndex, startX, startY) => {
+    let curY = startY;
+    const parts = getGroupedParts(pattern);
 
-    // ── 1. Çubuk Başlığı ──
+    // 1. Çubuk Başlığı (91mm genişlik)
     const barLabel = pattern.stockItem.label || units.format(pattern.stockItem.length);
-    const barTitle = `${pIdx + 1}. ${t('results.stockBar')} (${barLabel})`;
+    const barTitle = `${barIndex}. ${t('results.stockBar')} (${barLabel})`;
 
     doc.setFillColor(55, 48, 163);
-    doc.roundedRect(margin, y, contentW, 5.5, 1, 1, 'F');
-    doc.setFontSize(7.5);
+    doc.roundedRect(startX, curY, cardW, 5.2, 1, 1, 'F');
+    doc.setFontSize(7);
     doc.setFont(PDF_FONT, 'bold');
     doc.setTextColor(255, 255, 255);
-    doc.text(barTitle, margin + 2.5, y + 3.8);
+    doc.text(barTitle, startX + 2, curY + 3.6);
 
     // Fire yüzdesi sağda
     const wp = pattern.wastePercentage;
-    const wasteLabel = `${t('results.waste')}: %${wp.toFixed(1)}`;
-    doc.text(wasteLabel, pageW - margin - 2.5, y + 3.8, { align: 'right' });
+    const wasteLabel = `%${wp.toFixed(1)}`;
+    doc.text(wasteLabel, startX + cardW - 2, curY + 3.6, { align: 'right' });
 
-    y += 6.5;
+    curY += 6.0;
 
-    // ── 2. Görsel Kesim Barı (İnce 4.5mm) ──
-    const scale = contentW / pattern.stockItem.length;
+    // 2. Görsel Kesim Barı (91mm genişlik, 4.2mm yükseklik)
+    const scale = cardW / pattern.stockItem.length;
 
     // Arka plan
     doc.setFillColor(225, 225, 230);
     doc.setDrawColor(190, 190, 200);
-    doc.rect(margin, y, contentW, barHeight, 'FD');
+    doc.rect(startX, curY, cardW, barHeight, 'FD');
 
-    // Kesim parçalarını çiz
+    // Parçaları çiz
     for (const cut of pattern.cuts) {
-      const x = margin + cut.position * scale;
-      const w = Math.max(0.4, cut.piece.length * scale);
+      const x = startX + cut.position * scale;
+      const w = Math.max(0.3, cut.piece.length * scale);
       const key = cut.piece.label || `${cut.piece.length}`;
       const cIdx = colorMap.get(key) % PALETTE.length;
       const rgb = PALETTE[cIdx];
 
       doc.setFillColor(rgb[0], rgb[1], rgb[2]);
-      doc.rect(x, y, w, barHeight, 'F');
+      doc.rect(x, curY, w, barHeight, 'F');
 
-      if (w > 7) {
-        doc.setFontSize(4);
+      if (w > 6) {
+        doc.setFontSize(3.8);
         doc.setFont(PDF_FONT, 'bold');
         doc.setTextColor(255, 255, 255);
-        const maxChars = Math.floor(w / 1.8);
-        const label = key.length > maxChars ? key.substring(0, maxChars - 1) + '…' : key;
-        doc.text(label, x + w / 2, y + barHeight / 2 + 0.7, { align: 'center' });
+        const maxChars = Math.floor(w / 1.6);
+        const label = key.length > maxChars ? key.substring(0, Math.max(1, maxChars - 1)) + '…' : key;
+        doc.text(label, x + w / 2, curY + barHeight / 2 + 0.6, { align: 'center' });
       }
     }
 
     // Fire bölgesi
     if (pattern.wasteLength > 0) {
       const pos = pattern.usedLength;
-      const x = margin + pos * scale;
+      const x = startX + pos * scale;
       const w = Math.max(0.3, pattern.wasteLength * scale);
       doc.setFillColor(WASTE_RGB[0], WASTE_RGB[1], WASTE_RGB[2]);
-      doc.rect(x, y, w, barHeight, 'F');
+      doc.rect(x, curY, w, barHeight, 'F');
     }
 
     // Kullanılabilir artık bölgesi
     if (pattern.usableRemnant > 0) {
       const pos = pattern.stockItem.length - pattern.usableRemnant;
-      const x = margin + pos * scale;
+      const x = startX + pos * scale;
       const w = Math.max(0.4, pattern.usableRemnant * scale);
       doc.setFillColor(REMNANT_RGB[0], REMNANT_RGB[1], REMNANT_RGB[2]);
-      doc.rect(x, y, w, barHeight, 'F');
+      doc.rect(x, curY, w, barHeight, 'F');
 
-      if (w > 9) {
-        doc.setFontSize(3.8);
+      if (w > 8) {
+        doc.setFontSize(3.5);
         doc.setFont(PDF_FONT, 'normal');
         doc.setTextColor(255, 255, 255);
-        doc.text(`${units.format(pattern.usableRemnant, 0)}`, x + w / 2, y + barHeight / 2 + 0.7, { align: 'center' });
+        doc.text(`${units.format(pattern.usableRemnant, 0)}`, x + w / 2, curY + barHeight / 2 + 0.6, { align: 'center' });
       }
     }
 
-    y += barHeight + 1.5;
+    curY += barHeight + 1.2;
 
-    // ── 3. Detay Tablosu ──
+    // 3. Detay Tablosu (Dar 91mm)
     doc.setFillColor(235, 235, 245);
     doc.setDrawColor(200, 200, 215);
-    let xPos = margin;
+    let xPos = startX;
     for (const col of cols) {
-      doc.rect(xPos, y, col.w, headerH, 'FD');
+      doc.rect(xPos, curY, col.w, headerH, 'FD');
       xPos += col.w;
     }
 
-    doc.setFontSize(6);
+    doc.setFontSize(5.8);
     doc.setFont(PDF_FONT, 'bold');
     doc.setTextColor(60, 60, 60);
-    xPos = margin;
+    xPos = startX;
     for (const col of cols) {
-      doc.text(col.label, xPos + 2, y + 3.5);
+      doc.text(col.label, xPos + 2, curY + 3.3);
       xPos += col.w;
     }
-    y += headerH;
+    curY += headerH;
 
-    // Parça satırları
+    // Parça Satırları
     for (const [rIdx, part] of parts.entries()) {
       const isEven = rIdx % 2 === 0;
       doc.setFillColor(isEven ? 250 : 255, isEven ? 250 : 255, isEven ? 255 : 255);
       doc.setDrawColor(220, 220, 230);
 
-      xPos = margin;
+      xPos = startX;
       for (const col of cols) {
-        doc.rect(xPos, y, col.w, rowH, 'FD');
+        doc.rect(xPos, curY, col.w, rowH, 'FD');
         xPos += col.w;
       }
 
-      doc.setFontSize(6);
+      doc.setFontSize(5.8);
       doc.setFont(PDF_FONT, 'normal');
       doc.setTextColor(40, 40, 40);
 
-      xPos = margin;
+      xPos = startX;
 
       // İsim
       const displayName = part.label || (i18n.locale === 'tr' ? 'Parça' : 'Part');
-      doc.text(displayName, xPos + 2, y + 3.2);
+      const truncatedName = displayName.length > 15 ? displayName.substring(0, 14) + '…' : displayName;
+      doc.text(truncatedName, xPos + 2, curY + 3.0);
       xPos += cols[0].w;
 
       // Boy
-      doc.text(`${units.fromMM(part.length)}`, xPos + 2, y + 3.2);
+      doc.text(`${units.fromMM(part.length)}`, xPos + 2, curY + 3.0);
       xPos += cols[1].w;
 
       // Adet
       doc.setFont(PDF_FONT, 'bold');
-      doc.text(`${part.count}`, xPos + 2, y + 3.2);
+      doc.text(`${part.count}`, xPos + 2, curY + 3.0);
 
-      y += rowH;
+      curY += rowH;
     }
 
     // Fire Satırı
     if (pattern.wasteLength > 0) {
       doc.setFillColor(255, 240, 240);
       doc.setDrawColor(220, 200, 200);
-      xPos = margin;
+      xPos = startX;
       for (const col of cols) {
-        doc.rect(xPos, y, col.w, rowH, 'FD');
+        doc.rect(xPos, curY, col.w, rowH, 'FD');
         xPos += col.w;
       }
 
-      doc.setFontSize(6);
+      doc.setFontSize(5.8);
       doc.setFont(PDF_FONT, 'bold');
       doc.setTextColor(180, 50, 50);
-      doc.text(t('results.waste'), margin + 2, y + 3.2);
-      doc.text(`${units.fromMM(pattern.wasteLength)}`, margin + cols[0].w + 2, y + 3.2);
-      doc.text(`%${pattern.wastePercentage.toFixed(1)}`, margin + cols[0].w + cols[1].w + 2, y + 3.2);
-      y += rowH;
+      doc.text(t('results.waste'), startX + 2, curY + 3.0);
+      doc.text(`${units.fromMM(pattern.wasteLength)}`, startX + cols[0].w + 2, curY + 3.0);
+      doc.text(`%${pattern.wastePercentage.toFixed(1)}`, startX + cols[0].w + cols[1].w + 2, curY + 3.0);
+      curY += rowH;
     }
 
     // Kullanılabilir Artık Satırı
     if (pattern.usableRemnant > 0) {
       doc.setFillColor(235, 255, 245);
       doc.setDrawColor(180, 220, 200);
-      xPos = margin;
+      xPos = startX;
       for (const col of cols) {
-        doc.rect(xPos, y, col.w, rowH, 'FD');
+        doc.rect(xPos, curY, col.w, rowH, 'FD');
         xPos += col.w;
       }
 
-      doc.setFontSize(6);
+      doc.setFontSize(5.8);
       doc.setFont(PDF_FONT, 'bold');
       doc.setTextColor(16, 130, 90);
-      doc.text(i18n.locale === 'tr' ? 'Kullanılabilir Artık' : 'Usable Remnant', margin + 2, y + 3.2);
-      doc.text(`${units.fromMM(pattern.usableRemnant)}`, margin + cols[0].w + 2, y + 3.2);
-      y += rowH;
+      doc.text(i18n.locale === 'tr' ? 'Kul. Artık' : 'Remnant', startX + 2, curY + 3.0);
+      doc.text(`${units.fromMM(pattern.usableRemnant)}`, startX + cols[0].w + 2, curY + 3.0);
+      curY += rowH;
+    }
+  };
+
+  // ── 2 Sütunlu İkili Döngü (Sol & Sağ Kartlar) ──
+  const patterns = result.patterns;
+  for (let i = 0; i < patterns.length; i += 2) {
+    const leftPattern = patterns[i];
+    const rightPattern = patterns[i + 1] || null;
+
+    const leftH = getCardHeight(leftPattern);
+    const rightH = rightPattern ? getCardHeight(rightPattern) : 0;
+    const rowMaxH = Math.max(leftH, rightH);
+
+    // Sayfa Taşma Kontrolü
+    if (y + rowMaxH > pageH - footerMargin) {
+      addFooter(doc, pageW, pageH, margin, t);
+      doc.addPage();
+      await registerPdfFont(doc);
+      y = margin + 2;
     }
 
-    y += 3.5; // Çubuklar arası kompakt mesafe
+    // Sol Sütun Kartı (x = 10)
+    drawCard(leftPattern, i + 1, margin, y);
+
+    // Sağ Sütun Kartı (x = 109)
+    if (rightPattern) {
+      drawCard(rightPattern, i + 2, margin + cardW + colGap, y);
+    }
+
+    y += rowMaxH + 3.0; // İki satır arası mesafe
   }
 
   // ═══════════════════════════════════════════════════════════
