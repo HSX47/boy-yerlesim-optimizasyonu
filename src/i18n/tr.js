@@ -10,7 +10,7 @@ export default {
 
   // — Genel —
   app: {
-    title: 'KesimOptimizer',
+    title: 'Kesim Eniyileme',
     subtitle: 'Boy Malzeme Kesim Optimizasyonu',
     tagline: 'Profil ve boru gibi boy malzemelerde fire\'ı minimuma indirin',
   },

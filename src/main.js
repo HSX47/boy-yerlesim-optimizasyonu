@@ -1,5 +1,5 @@
 /**
- * KesimOptimizer — Ana Uygulama
+ * Kesim Eniyileme — Ana Uygulama
  */
 
 // Stiller
@@ -32,7 +32,9 @@ const project = createProject({
   stockItems: [
     createStockItem({ length: 6000, label: '6 m', quantity: 0, unitPrice: 0 }),
   ],
-  cutPieces: [],
+  cutPieces: [
+    createCutPiece({ length: 0, quantity: 1, label: '' }),
+  ],
 });
 
 let lastResult = null;
@@ -197,6 +199,7 @@ function handleExportExcel() {
 // ── Sıfırla ─────────────────────────────────────────────────
 function handleReset() {
   project.cutPieces.length = 0;
+  project.cutPieces.push(createCutPiece({ length: 0, quantity: 1, label: '' }));
   lastResult = null;
   project.lastResult = null;
 
