@@ -231,7 +231,7 @@ Sonuç objesi (`OptimizationResult`) her zaman aynı şekli döndürür.
 - Optimizasyon parametreleri paneli
 - SVG kesim diyagramı (renk kodlu)
 - Sonuç paneli (istatistik kartları + detaylı plan)
-- PDF rapor dışa aktarım (dikey A4, Inter Türkçe font entegrasyonu, tam karakter desteği)
+- PDF rapor dışa aktarım (dikey A4, Inter Türkçe font, bileşik çubuk kartları, sıfır alt boşluk kaybı)
 - Excel rapor dışa aktarım (3 sayfa)
 - Toast bildirim sistemi
 - Stok miktar yetersizliği / sığmayan parça tespit sistemi ve kırmızı uyarı banner'ı
