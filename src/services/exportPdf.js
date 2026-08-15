@@ -1,8 +1,10 @@
 /**
  * PDF Dışa Aktarım — jsPDF ile kesim planı raporu
  * 
- * DİKEY (portrait) A4 sayfa, renkli kesim diyagramı + altında tablo.
- * Türkçe karakter desteği için Inter TTF fontu entegre edilmiştir.
+ * DİKEY (portrait) A4 sayfa.
+ * Her çubuk için renkli ince kesim diyagramı + altında detay tablosu (Bileşik Kart Yapısı).
+ * Sayfa alanı %90+ verimle kullanılır, gereksiz sayfa altı boşlukları ve taşmalar engellenir.
+ * Inter Türkçe TTF fontu entegre edilmiştir.
  */
 
 import { jsPDF } from 'jspdf';
@@ -44,8 +46,9 @@ export async function exportPdf(result, stockItems, cutPieces, params) {
 
   const pageW = doc.internal.pageSize.getWidth();   // 210
   const pageH = doc.internal.pageSize.getHeight();   // 297
-  const margin = 12;
+  const margin = 10;
   const contentW = pageW - margin * 2;
+  const footerMargin = 12;
   let y = 0;
 
   // ── Renk haritası oluştur ──
@@ -66,63 +69,63 @@ export async function exportPdf(result, stockItems, cutPieces, params) {
   // BAŞLIK BANDI
   // ═══════════════════════════════════════════════════════════
   doc.setFillColor(55, 48, 163);
-  doc.rect(0, 0, pageW, 18, 'F');
+  doc.rect(0, 0, pageW, 16, 'F');
   doc.setTextColor(255, 255, 255);
-  doc.setFontSize(13);
+  doc.setFontSize(12);
   doc.setFont(PDF_FONT, 'bold');
-  doc.text(`${t('app.title')} — ${t('results.cuttingPlan')}`, margin, 12);
-  doc.setFontSize(9);
+  doc.text(`${t('app.title')} — ${t('results.cuttingPlan')}`, margin, 11);
+  doc.setFontSize(8.5);
   doc.setFont(PDF_FONT, 'normal');
   const dateStr = new Date().toLocaleDateString(i18n.locale === 'tr' ? 'tr-TR' : 'en-US', {
     year: 'numeric', month: '2-digit', day: '2-digit',
   });
-  doc.text(dateStr, pageW - margin, 12, { align: 'right' });
+  doc.text(dateStr, pageW - margin, 11, { align: 'right' });
 
-  y = 24;
+  y = 21;
 
   // ═══════════════════════════════════════════════════════════
-  // ÖZET KUTUSU (2 satır)
+  // ÖZET KUTUSU (Kompakt 2 satır)
   // ═══════════════════════════════════════════════════════════
   doc.setFillColor(245, 245, 252);
   doc.setDrawColor(200, 200, 220);
-  doc.roundedRect(margin, y, contentW, 22, 2, 2, 'FD');
+  doc.roundedRect(margin, y, contentW, 18, 1.5, 1.5, 'FD');
 
   doc.setTextColor(40, 40, 40);
-  doc.setFontSize(8);
+  doc.setFontSize(7.5);
   doc.setFont(PDF_FONT, 'bold');
 
-  // Üst satır: Stok ve Fire
+  // Üst satır: Stok ve Fire Oranı
   const row1 = [
     `${t('results.totalStock')}: ${result.totalStockUsed} ${t('results.pieces')}`,
     `${t('results.wastePercentage')}: %${result.totalWastePercentage.toFixed(1)}`,
   ];
   const row1ColW = contentW / row1.length;
   row1.forEach((text, idx) => {
-    doc.text(text, margin + row1ColW * idx + row1ColW / 2, y + 8, { align: 'center' });
+    doc.text(text, margin + row1ColW * idx + row1ColW / 2, y + 6.5, { align: 'center' });
   });
 
-  // Alt satır: Toplam fire ve Testere payı
+  // Alt satır: Toplam Fire ve Testere Payı
   const row2 = [
     `${t('results.totalWaste')}: ${units.format(result.totalWaste)}`,
     `${t('params.kerfWidth')}: ${units.format(params.kerfWidth)}`,
   ];
   const row2ColW = contentW / row2.length;
   row2.forEach((text, idx) => {
-    doc.text(text, margin + row2ColW * idx + row2ColW / 2, y + 16, { align: 'center' });
+    doc.text(text, margin + row2ColW * idx + row2ColW / 2, y + 13.5, { align: 'center' });
   });
 
-  y += 28;
+  y += 22;
 
   // ═══════════════════════════════════════════════════════════
   // LEJANT (Renk → Parça Eşleştirmesi)
   // ═══════════════════════════════════════════════════════════
-  doc.setFontSize(8);
+  doc.setFontSize(7.5);
   doc.setFont(PDF_FONT, 'bold');
   doc.setTextColor(60, 60, 60);
   doc.text(i18n.locale === 'tr' ? 'Parça Renkleri:' : 'Part Colors:', margin, y);
-  y += 4;
+  y += 3.5;
 
-  const legendColW = 44;
+  const legendColW = 42;
   const legendCols = Math.floor(contentW / legendColW);
   let legendX = margin;
   let legendRow = 0;
@@ -133,154 +136,65 @@ export async function exportPdf(result, stockItems, cutPieces, params) {
       legendRow++;
     }
     legendX = margin + col * legendColW;
-    const ly = y + legendRow * 5;
+    const ly = y + legendRow * 4.5;
 
     const rgb = PALETTE[colorMap.get(key) % PALETTE.length];
     doc.setFillColor(rgb[0], rgb[1], rgb[2]);
-    doc.rect(legendX, ly - 2.5, 4, 3, 'F');
+    doc.rect(legendX, ly - 2.2, 3.5, 2.8, 'F');
 
     doc.setFont(PDF_FONT, 'normal');
-    doc.setFontSize(6.5);
+    doc.setFontSize(6);
     doc.setTextColor(50, 50, 50);
     const label = key.length > 18 ? key.substring(0, 17) + '…' : key;
-    doc.text(`${label} (${units.format(findLength(key, result))})`, legendX + 5.5, ly);
+    doc.text(`${label} (${units.format(findLength(key, result))})`, legendX + 4.8, ly);
   });
 
-  // Artık ve fire lejantı — daima yeni satırda
+  // Artık ve fire lejantı
   legendRow++;
   const fireX = margin;
-  const fireLy = y + legendRow * 5;
+  const fireLy = y + legendRow * 4.5;
 
   // Fire
   doc.setFillColor(WASTE_RGB[0], WASTE_RGB[1], WASTE_RGB[2]);
-  doc.rect(fireX, fireLy - 2.5, 4, 3, 'F');
+  doc.rect(fireX, fireLy - 2.2, 3.5, 2.8, 'F');
   doc.setTextColor(180, 60, 60);
-  doc.setFontSize(6.5);
+  doc.setFontSize(6);
   doc.setFont(PDF_FONT, 'normal');
-  doc.text(t('results.waste'), fireX + 5.5, fireLy);
+  doc.text(t('results.waste'), fireX + 4.8, fireLy);
 
   // Artık
   const remX = fireX + legendColW;
   doc.setFillColor(REMNANT_RGB[0], REMNANT_RGB[1], REMNANT_RGB[2]);
-  doc.rect(remX, fireLy - 2.5, 4, 3, 'F');
+  doc.rect(remX, fireLy - 2.2, 3.5, 2.8, 'F');
   doc.setTextColor(16, 130, 90);
   doc.setFont(PDF_FONT, 'normal');
-  doc.text(i18n.locale === 'tr' ? 'Kul. Artık' : 'Remnant', remX + 5.5, fireLy);
+  doc.text(i18n.locale === 'tr' ? 'Kul. Artık' : 'Remnant', remX + 4.8, fireLy);
 
-  y += (legendRow + 1) * 5 + 4;
+  y += (legendRow + 1) * 4.5 + 3;
 
   // ═══════════════════════════════════════════════════════════
-  // KESİM DİYAGRAMLARI (İnce Çubuk Görünümü: 5mm)
+  // KESİM PLANI (Çubuk Kartları: Görsel Bar + Altında Tablo)
   // ═══════════════════════════════════════════════════════════
-  doc.setFontSize(9);
+  doc.setFontSize(8.5);
   doc.setFont(PDF_FONT, 'bold');
   doc.setTextColor(40, 40, 40);
   doc.text(t('results.cuttingPlan'), margin, y);
-  y += 5;
-
-  const barHeight = 5;
-
-  for (const [pIdx, pattern] of result.patterns.entries()) {
-    // Sayfa taşması kontrolü
-    if (y + barHeight + 8 > pageH - 25) {
-      addFooter(doc, pageW, pageH, margin, t);
-      doc.addPage();
-      await registerPdfFont(doc);
-      y = margin;
-    }
-
-    const scale = contentW / pattern.stockItem.length;
-
-    // Bar başlığı
-    doc.setFontSize(6.5);
-    doc.setFont(PDF_FONT, 'bold');
-    doc.setTextColor(70, 70, 70);
-    const barTitle = `${t('results.stockBar')} #${pIdx + 1} — ${pattern.stockItem.label || units.format(pattern.stockItem.length)}`;
-    doc.text(barTitle, margin, y);
-
-    // Fire yüzdesi sağda
-    const wasteText = `${t('results.waste')}: %${pattern.wastePercentage.toFixed(1)}`;
-    doc.setTextColor(pattern.wastePercentage < 5 ? 16 : pattern.wastePercentage < 15 ? 180 : 200,
-                     pattern.wastePercentage < 5 ? 150 : pattern.wastePercentage < 15 ? 120 : 60,
-                     pattern.wastePercentage < 5 ? 100 : pattern.wastePercentage < 15 ? 10 : 60);
-    doc.text(wasteText, pageW - margin, y, { align: 'right' });
-
-    y += 1.8;
-
-    // Arka plan bar
-    doc.setFillColor(225, 225, 230);
-    doc.setDrawColor(190, 190, 200);
-    doc.rect(margin, y, contentW, barHeight, 'FD');
-
-    // Her parçayı çiz
-    for (const cut of pattern.cuts) {
-      const x = margin + cut.position * scale;
-      const w = Math.max(0.5, cut.piece.length * scale);
-      const key = cut.piece.label || `${cut.piece.length}`;
-      const cIdx = colorMap.get(key) % PALETTE.length;
-      const rgb = PALETTE[cIdx];
-
-      doc.setFillColor(rgb[0], rgb[1], rgb[2]);
-      doc.rect(x, y, w, barHeight, 'F');
-
-      // Parça etiketi — sadece yeterli genişlikte
-      if (w > 8) {
-        doc.setFontSize(4.5);
-        doc.setFont(PDF_FONT, 'bold');
-        doc.setTextColor(255, 255, 255);
-        const maxChars = Math.floor(w / 2);
-        const label = key.length > maxChars ? key.substring(0, maxChars - 1) + '…' : key;
-        doc.text(label, x + w / 2, y + barHeight / 2 + 0.8, { align: 'center' });
-      }
-    }
-
-    // Fire bölgesi
-    if (pattern.wasteLength > 0) {
-      const pos = pattern.usedLength;
-      const x = margin + pos * scale;
-      const w = Math.max(0.3, pattern.wasteLength * scale);
-      doc.setFillColor(WASTE_RGB[0], WASTE_RGB[1], WASTE_RGB[2]);
-      doc.rect(x, y, w, barHeight, 'F');
-    }
-
-    // Kullanılabilir artık
-    if (pattern.usableRemnant > 0) {
-      const pos = pattern.stockItem.length - pattern.usableRemnant;
-      const x = margin + pos * scale;
-      const w = Math.max(0.5, pattern.usableRemnant * scale);
-      doc.setFillColor(REMNANT_RGB[0], REMNANT_RGB[1], REMNANT_RGB[2]);
-      doc.rect(x, y, w, barHeight, 'F');
-
-      if (w > 10) {
-        doc.setFontSize(4);
-        doc.setFont(PDF_FONT, 'normal');
-        doc.setTextColor(255, 255, 255);
-        doc.text(`${units.format(pattern.usableRemnant, 0)}`, x + w / 2, y + barHeight / 2 + 0.8, { align: 'center' });
-      }
-    }
-
-    y += barHeight + 3.5;
-  }
-
-  y += 4;
-
-  // ═══════════════════════════════════════════════════════════
-  // KESİM PLANI — HER ÇUBUK İÇİN AYRI TABLO
-  // ═══════════════════════════════════════════════════════════
+  y += 4.5;
 
   const unitLabel = units.primaryUnit;
-  const rowH = 5.5;
-  const headerH = 6;
+  const rowH = 4.5;
+  const headerH = 5;
+  const barHeight = 4.5;
 
   // Tablo sütun tanımları
   const cols = [
-    { label: i18n.locale === 'tr' ? 'İsim' : 'Name', w: Math.floor(contentW * 0.35) },
+    { label: i18n.locale === 'tr' ? 'Parça Adı' : 'Part Name', w: Math.floor(contentW * 0.40) },
     { label: `${i18n.locale === 'tr' ? 'Boy' : 'Length'} (${unitLabel})`, w: Math.floor(contentW * 0.35) },
-    { label: i18n.locale === 'tr' ? 'Adet' : 'Qty', w: contentW - Math.floor(contentW * 0.35) * 2 },
+    { label: i18n.locale === 'tr' ? 'Adet' : 'Qty', w: contentW - Math.floor(contentW * 0.40) - Math.floor(contentW * 0.35) },
   ];
 
   for (const [pIdx, pattern] of result.patterns.entries()) {
-    // ── Ayrı parçaları grupla (aynı parça birden fazla kez kesilmiş olabilir) ──
+    // ── Parçaları grupla ──
     const partGroups = new Map();
     for (const cut of pattern.cuts) {
       const key = (cut.piece.label || '') + '|' + cut.piece.length;
@@ -296,36 +210,93 @@ export async function exportPdf(result, stockItems, cutPieces, params) {
     }
     const parts = [...partGroups.values()];
 
-    // Tablo + başlık yüksekliği hesapla
-    const tableHeight = headerH + (parts.length + 2) * rowH + 8; // +2 for fire & remnant rows
+    // Toplam kart yüksekliği hesapla: Başlık(5.5) + Bar(4.5+1.5) + TabloHeader(5) + Satırlar(parts.length * 4.5) + (Fire/Artık satırları * 4.5) + Boşluk(3)
+    const extraRows = (pattern.wasteLength > 0 ? 1 : 0) + (pattern.usableRemnant > 0 ? 1 : 0);
+    const cardHeight = 5.5 + (barHeight + 1.5) + headerH + (parts.length + extraRows) * rowH + 4;
 
-    // Sayfa taşma kontrolü
-    if (y + tableHeight + 12 > pageH - 15) {
+    // Sayfa Taşma Kontrolü — Kart bütünüyle sığmıyorsa yeni sayfaya geç
+    if (y + cardHeight > pageH - footerMargin) {
       addFooter(doc, pageW, pageH, margin, t);
       doc.addPage();
       await registerPdfFont(doc);
-      y = margin;
+      y = margin + 2;
     }
 
-    // ── Çubuk Başlığı ──
+    // ── 1. Çubuk Başlığı ──
     const barLabel = pattern.stockItem.label || units.format(pattern.stockItem.length);
     const barTitle = `${pIdx + 1}. ${t('results.stockBar')} (${barLabel})`;
 
     doc.setFillColor(55, 48, 163);
-    doc.roundedRect(margin, y, contentW, 7, 1.5, 1.5, 'F');
-    doc.setFontSize(8);
+    doc.roundedRect(margin, y, contentW, 5.5, 1, 1, 'F');
+    doc.setFontSize(7.5);
     doc.setFont(PDF_FONT, 'bold');
     doc.setTextColor(255, 255, 255);
-    doc.text(barTitle, margin + 3, y + 5);
+    doc.text(barTitle, margin + 2.5, y + 3.8);
 
     // Fire yüzdesi sağda
     const wp = pattern.wastePercentage;
     const wasteLabel = `${t('results.waste')}: %${wp.toFixed(1)}`;
-    doc.text(wasteLabel, pageW - margin - 3, y + 5, { align: 'right' });
+    doc.text(wasteLabel, pageW - margin - 2.5, y + 3.8, { align: 'right' });
 
-    y += 9;
+    y += 6.5;
 
-    // ── Tablo Başlık Satırı ──
+    // ── 2. Görsel Kesim Barı (İnce 4.5mm) ──
+    const scale = contentW / pattern.stockItem.length;
+
+    // Arka plan
+    doc.setFillColor(225, 225, 230);
+    doc.setDrawColor(190, 190, 200);
+    doc.rect(margin, y, contentW, barHeight, 'FD');
+
+    // Kesim parçalarını çiz
+    for (const cut of pattern.cuts) {
+      const x = margin + cut.position * scale;
+      const w = Math.max(0.4, cut.piece.length * scale);
+      const key = cut.piece.label || `${cut.piece.length}`;
+      const cIdx = colorMap.get(key) % PALETTE.length;
+      const rgb = PALETTE[cIdx];
+
+      doc.setFillColor(rgb[0], rgb[1], rgb[2]);
+      doc.rect(x, y, w, barHeight, 'F');
+
+      if (w > 7) {
+        doc.setFontSize(4);
+        doc.setFont(PDF_FONT, 'bold');
+        doc.setTextColor(255, 255, 255);
+        const maxChars = Math.floor(w / 1.8);
+        const label = key.length > maxChars ? key.substring(0, maxChars - 1) + '…' : key;
+        doc.text(label, x + w / 2, y + barHeight / 2 + 0.7, { align: 'center' });
+      }
+    }
+
+    // Fire bölgesi
+    if (pattern.wasteLength > 0) {
+      const pos = pattern.usedLength;
+      const x = margin + pos * scale;
+      const w = Math.max(0.3, pattern.wasteLength * scale);
+      doc.setFillColor(WASTE_RGB[0], WASTE_RGB[1], WASTE_RGB[2]);
+      doc.rect(x, y, w, barHeight, 'F');
+    }
+
+    // Kullanılabilir artık bölgesi
+    if (pattern.usableRemnant > 0) {
+      const pos = pattern.stockItem.length - pattern.usableRemnant;
+      const x = margin + pos * scale;
+      const w = Math.max(0.4, pattern.usableRemnant * scale);
+      doc.setFillColor(REMNANT_RGB[0], REMNANT_RGB[1], REMNANT_RGB[2]);
+      doc.rect(x, y, w, barHeight, 'F');
+
+      if (w > 9) {
+        doc.setFontSize(3.8);
+        doc.setFont(PDF_FONT, 'normal');
+        doc.setTextColor(255, 255, 255);
+        doc.text(`${units.format(pattern.usableRemnant, 0)}`, x + w / 2, y + barHeight / 2 + 0.7, { align: 'center' });
+      }
+    }
+
+    y += barHeight + 1.5;
+
+    // ── 3. Detay Tablosu ──
     doc.setFillColor(235, 235, 245);
     doc.setDrawColor(200, 200, 215);
     let xPos = margin;
@@ -334,17 +305,17 @@ export async function exportPdf(result, stockItems, cutPieces, params) {
       xPos += col.w;
     }
 
-    doc.setFontSize(6.5);
+    doc.setFontSize(6);
     doc.setFont(PDF_FONT, 'bold');
     doc.setTextColor(60, 60, 60);
     xPos = margin;
     for (const col of cols) {
-      doc.text(col.label, xPos + 2, y + 4.2);
+      doc.text(col.label, xPos + 2, y + 3.5);
       xPos += col.w;
     }
     y += headerH;
 
-    // ── Parça Satırları ──
+    // Parça satırları
     for (const [rIdx, part] of parts.entries()) {
       const isEven = rIdx % 2 === 0;
       doc.setFillColor(isEven ? 250 : 255, isEven ? 250 : 255, isEven ? 255 : 255);
@@ -356,7 +327,7 @@ export async function exportPdf(result, stockItems, cutPieces, params) {
         xPos += col.w;
       }
 
-      doc.setFontSize(6.5);
+      doc.setFontSize(6);
       doc.setFont(PDF_FONT, 'normal');
       doc.setTextColor(40, 40, 40);
 
@@ -364,21 +335,21 @@ export async function exportPdf(result, stockItems, cutPieces, params) {
 
       // İsim
       const displayName = part.label || (i18n.locale === 'tr' ? 'Parça' : 'Part');
-      doc.text(displayName, xPos + 2, y + 3.8);
+      doc.text(displayName, xPos + 2, y + 3.2);
       xPos += cols[0].w;
 
       // Boy
-      doc.text(`${units.fromMM(part.length)}`, xPos + 2, y + 3.8);
+      doc.text(`${units.fromMM(part.length)}`, xPos + 2, y + 3.2);
       xPos += cols[1].w;
 
       // Adet
       doc.setFont(PDF_FONT, 'bold');
-      doc.text(`${part.count}`, xPos + 2, y + 3.8);
+      doc.text(`${part.count}`, xPos + 2, y + 3.2);
 
       y += rowH;
     }
 
-    // ── Fire Satırı (Emoji yok, düz metin) ──
+    // Fire Satırı
     if (pattern.wasteLength > 0) {
       doc.setFillColor(255, 240, 240);
       doc.setDrawColor(220, 200, 200);
@@ -388,16 +359,16 @@ export async function exportPdf(result, stockItems, cutPieces, params) {
         xPos += col.w;
       }
 
-      doc.setFontSize(6.5);
+      doc.setFontSize(6);
       doc.setFont(PDF_FONT, 'bold');
       doc.setTextColor(180, 50, 50);
-      doc.text(t('results.waste'), margin + 2, y + 3.8);
-      doc.text(`${units.fromMM(pattern.wasteLength)}`, margin + cols[0].w + 2, y + 3.8);
-      doc.text(`%${pattern.wastePercentage.toFixed(1)}`, margin + cols[0].w + cols[1].w + 2, y + 3.8);
+      doc.text(t('results.waste'), margin + 2, y + 3.2);
+      doc.text(`${units.fromMM(pattern.wasteLength)}`, margin + cols[0].w + 2, y + 3.2);
+      doc.text(`%${pattern.wastePercentage.toFixed(1)}`, margin + cols[0].w + cols[1].w + 2, y + 3.2);
       y += rowH;
     }
 
-    // ── Kullanılabilir Artık Satırı (Emoji yok, düz metin) ──
+    // Kullanılabilir Artık Satırı
     if (pattern.usableRemnant > 0) {
       doc.setFillColor(235, 255, 245);
       doc.setDrawColor(180, 220, 200);
@@ -407,36 +378,36 @@ export async function exportPdf(result, stockItems, cutPieces, params) {
         xPos += col.w;
       }
 
-      doc.setFontSize(6.5);
+      doc.setFontSize(6);
       doc.setFont(PDF_FONT, 'bold');
       doc.setTextColor(16, 130, 90);
-      doc.text(i18n.locale === 'tr' ? 'Kullanılabilir Artık' : 'Usable Remnant', margin + 2, y + 3.8);
-      doc.text(`${units.fromMM(pattern.usableRemnant)}`, margin + cols[0].w + 2, y + 3.8);
+      doc.text(i18n.locale === 'tr' ? 'Kullanılabilir Artık' : 'Usable Remnant', margin + 2, y + 3.2);
+      doc.text(`${units.fromMM(pattern.usableRemnant)}`, margin + cols[0].w + 2, y + 3.2);
       y += rowH;
     }
 
-    y += 6; // Tablolar arası boşluk
+    y += 3.5; // Çubuklar arası kompakt mesafe
   }
 
   // ═══════════════════════════════════════════════════════════
   // KULLANILABILIR ARTIKLAR ÖZETİ
   // ═══════════════════════════════════════════════════════════
   if (result.usableRemnants.length > 0) {
-    if (y + 10 > pageH - 15) {
+    if (y + 10 > pageH - footerMargin) {
       addFooter(doc, pageW, pageH, margin, t);
       doc.addPage();
       await registerPdfFont(doc);
-      y = margin;
+      y = margin + 2;
     }
 
-    doc.setFontSize(8);
+    doc.setFontSize(7.5);
     doc.setFont(PDF_FONT, 'bold');
     doc.setTextColor(16, 130, 90);
     doc.text(`${t('results.usableRemnants')}:`, margin, y);
-    y += 5;
+    y += 4;
 
     doc.setFont(PDF_FONT, 'normal');
-    doc.setFontSize(7.5);
+    doc.setFontSize(7);
     doc.setTextColor(50, 50, 50);
     const remText = result.usableRemnants.map(r => `${units.format(r.length)} x ${r.count}`).join('   |   ');
     doc.text(remText, margin, y);
@@ -460,13 +431,13 @@ export async function exportPdf(result, stockItems, cutPieces, params) {
 
 function addFooter(doc, pageW, pageH, margin, t, currentPage, totalPages) {
   doc.setDrawColor(200, 200, 210);
-  doc.line(margin, pageH - 10, pageW - margin, pageH - 10);
+  doc.line(margin, pageH - 8, pageW - margin, pageH - 8);
   doc.setFontSize(6);
   doc.setTextColor(150, 150, 150);
   doc.setFont(PDF_FONT, 'normal');
-  doc.text(`${t('app.title')} — v0.1.0`, margin, pageH - 6);
+  doc.text(`${t('app.title')} — v0.1.0`, margin, pageH - 4.5);
   if (currentPage && totalPages) {
-    doc.text(`${currentPage} / ${totalPages}`, pageW - margin, pageH - 6, { align: 'right' });
+    doc.text(`${currentPage} / ${totalPages}`, pageW - margin, pageH - 4.5, { align: 'right' });
   }
 }
 
