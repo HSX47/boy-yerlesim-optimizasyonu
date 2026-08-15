@@ -1,0 +1,21 @@
+{
+  "name": "boy-yerlesim-optimizasyonu",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^8.2.0"
+  },
+  "dependencies": {
+    "dejavu-fonts-ttf": "^2.37.3",
+    "dexie": "^4.4.5",
+    "jspdf": "^4.2.1",
+    "uuid": "^14.0.1",
+    "xlsx": "^0.18.5"
+  }
+}

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KesimOptimizer — Boy Malzeme Kesim Optimizasyonu</title>
+  <meta name="description" content="Profil, boru ve boy malzemelerde fire minimizasyonu ve kesim planı optimizasyonu. Ücretsiz online mühendislik aracı.">
+  <meta name="keywords" content="kesim optimizasyonu, boy malzeme, fire hesabı, profil kesim, cutting optimization, linear cutting">
+  <meta name="author" content="KesimOptimizer">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="KesimOptimizer — Boy Malzeme Kesim Optimizasyonu">
+  <meta property="og:description" content="Profil ve boru gibi boy malzemelerde fire'ı minimuma indirin.">
+  <meta property="og:type" content="website">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+  <!-- Preconnect Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <script type="module" src="/src/main.js"></script>
+</head>
+<body>
+  <!-- Navbar -->
+  <header id="navbar-root"></header>
+
+  <!-- Action Bar -->
+  <div class="action-bar" id="action-bar">
+    <button class="btn btn--success btn--lg btn--optimize-pulse" id="optimize-btn">
+      <span data-i18n="actions.optimize">🚀 Optimize Et</span>
+    </button>
+    <button class="btn btn--ghost" id="reset-btn">
+      <span data-i18n="actions.reset">Sıfırla</span>
+    </button>
+  </div>
+
+  <!-- Main Content -->
+  <main class="app-layout">
+    <div class="app-main">
+      <!-- Sol Kolon: Girdiler -->
+      <div class="input-column">
+        <div id="stock-panel-root"></div>
+        <div id="cuts-panel-root"></div>
+        <div id="params-panel-root"></div>
+      </div>
+
+      <!-- Sağ Kolon: Sonuçlar -->
+      <div class="results-column">
+        <div id="results-panel-root"></div>
+        <div id="visualizer-root"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer style="
+    text-align: center;
+    padding: var(--sp-6);
+    color: var(--c-text-muted);
+    font-size: var(--fs-xs);
+    border-top: 1px solid var(--c-border);
+  ">
+    <span data-i18n="footer.copyright" data-i18n-params='{"year": "2026"}'>
+      © 2026 KesimOptimizer — Tüm hakları saklıdır.
+    </span>
+  </footer>
+</body>
+</html>

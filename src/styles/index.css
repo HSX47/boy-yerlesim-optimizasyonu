@@ -1,0 +1,283 @@
+/* ═══════════════════════════════════════════════════════════
+   KesimOptimizer — Design System & Global Styles
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Google Fonts ────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ── CSS Custom Properties (Design Tokens) ───────────────── */
+:root {
+  /* — Color Palette — */
+  --c-primary-50:  hsl(234, 85%, 95%);
+  --c-primary-100: hsl(234, 85%, 88%);
+  --c-primary-200: hsl(234, 85%, 78%);
+  --c-primary-300: hsl(234, 85%, 70%);
+  --c-primary-400: hsl(234, 85%, 65%);
+  --c-primary-500: hsl(234, 80%, 55%);
+  --c-primary-600: hsl(234, 75%, 48%);
+  --c-primary-700: hsl(234, 70%, 40%);
+
+  --c-success-400: hsl(160, 84%, 45%);
+  --c-success-500: hsl(160, 84%, 39%);
+  --c-success-600: hsl(160, 75%, 30%);
+
+  --c-warning-400: hsl(38, 92%, 60%);
+  --c-warning-500: hsl(38, 92%, 50%);
+  --c-warning-600: hsl(38, 80%, 40%);
+
+  --c-danger-400:  hsl(0, 84%, 65%);
+  --c-danger-500:  hsl(0, 84%, 60%);
+  --c-danger-600:  hsl(0, 72%, 50%);
+
+  --c-info-400:    hsl(190, 90%, 50%);
+  --c-info-500:    hsl(190, 90%, 45%);
+
+  /* — Dark Theme Surface Colors — */
+  --c-bg:          hsl(222, 47%, 6%);
+  --c-surface-0:   hsl(222, 47%, 8%);
+  --c-surface-1:   hsl(222, 43%, 11%);
+  --c-surface-2:   hsl(222, 40%, 14%);
+  --c-surface-3:   hsl(222, 37%, 18%);
+  --c-surface-4:   hsl(222, 34%, 22%);
+
+  /* — Text — */
+  --c-text:        hsl(210, 40%, 96%);
+  --c-text-2:      hsl(215, 20%, 75%);
+  --c-text-3:      hsl(215, 15%, 55%);
+  --c-text-muted:  hsl(215, 12%, 42%);
+
+  /* — Border — */
+  --c-border:      hsl(220, 20%, 18%);
+  --c-border-2:    hsl(220, 20%, 24%);
+  --c-border-focus: var(--c-primary-400);
+
+  /* — Typography — */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  --fs-xs:   0.75rem;    /* 12px */
+  --fs-sm:   0.8125rem;  /* 13px */
+  --fs-base: 0.9375rem;  /* 15px */
+  --fs-md:   1rem;       /* 16px */
+  --fs-lg:   1.125rem;   /* 18px */
+  --fs-xl:   1.375rem;   /* 22px */
+  --fs-2xl:  1.75rem;    /* 28px */
+  --fs-3xl:  2.25rem;    /* 36px */
+
+  --fw-light:    300;
+  --fw-normal:   400;
+  --fw-medium:   500;
+  --fw-semibold: 600;
+  --fw-bold:     700;
+  --fw-heavy:    800;
+
+  --lh-tight:  1.2;
+  --lh-normal: 1.55;
+  --lh-loose:  1.8;
+
+  /* — Spacing — */
+  --sp-1:  0.25rem;   /* 4px */
+  --sp-2:  0.5rem;    /* 8px */
+  --sp-3:  0.75rem;   /* 12px */
+  --sp-4:  1rem;      /* 16px */
+  --sp-5:  1.25rem;   /* 20px */
+  --sp-6:  1.5rem;    /* 24px */
+  --sp-8:  2rem;      /* 32px */
+  --sp-10: 2.5rem;    /* 40px */
+  --sp-12: 3rem;      /* 48px */
+  --sp-16: 4rem;      /* 64px */
+
+  /* — Radius — */
+  --r-sm:   6px;
+  --r-md:   10px;
+  --r-lg:   16px;
+  --r-xl:   24px;
+  --r-full: 9999px;
+
+  /* — Shadows — */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.25);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3);
+  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.25);
+  --shadow-glow-success: 0 0 20px rgba(16, 185, 129, 0.25);
+
+  /* — Transitions — */
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast:    150ms;
+  --dur-normal:  250ms;
+  --dur-slow:    400ms;
+
+  /* — Z-Index — */
+  --z-dropdown:  100;
+  --z-sticky:    200;
+  --z-modal:     500;
+  --z-toast:     900;
+
+  /* — Layout — */
+  --sidebar-width: 420px;
+  --navbar-height: 60px;
+  --max-content:   1440px;
+}
+
+/* ── Reset ───────────────────────────────────────────────── */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-normal);
+  line-height: var(--lh-normal);
+  color: var(--c-text);
+  background: var(--c-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* Subtle grid pattern background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 1px 1px, hsl(220, 20%, 12%) 1px, transparent 0);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.5;
+}
+
+a {
+  color: var(--c-primary-400);
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+a:hover { color: var(--c-primary-300); }
+
+img, svg { display: block; max-width: 100%; }
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+ul, ol { list-style: none; }
+
+/* ── Scrollbar ───────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--c-surface-0);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--c-surface-4);
+  border-radius: var(--r-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--c-text-muted);
+}
+
+/* ── Selection ───────────────────────────────────────────── */
+::selection {
+  background: var(--c-primary-500);
+  color: white;
+}
+
+/* ── Light Theme ─────────────────────────────────────────── */
+[data-theme="light"] {
+  --c-bg:          hsl(220, 20%, 97%);
+  --c-surface-0:   hsl(220, 20%, 95%);
+  --c-surface-1:   hsl(220, 15%, 100%);
+  --c-surface-2:   hsl(220, 15%, 96%);
+  --c-surface-3:   hsl(220, 15%, 92%);
+  --c-surface-4:   hsl(220, 15%, 88%);
+
+  --c-text:        hsl(220, 30%, 15%);
+  --c-text-2:      hsl(220, 15%, 35%);
+  --c-text-3:      hsl(220, 10%, 50%);
+  --c-text-muted:  hsl(220, 8%, 60%);
+
+  --c-border:      hsl(220, 15%, 85%);
+  --c-border-2:    hsl(220, 15%, 78%);
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.12);
+  --shadow-glow-success: 0 0 20px rgba(16, 185, 129, 0.12);
+}
+
+/* Light theme: soften the grid pattern */
+[data-theme="light"] body::before {
+  background-image:
+    radial-gradient(circle at 1px 1px, hsl(220, 15%, 88%) 1px, transparent 0);
+  opacity: 0.35;
+}
+
+/* Light theme: navbar glass effect */
+[data-theme="light"] .navbar {
+  background: rgba(255, 255, 255, 0.75);
+  border-bottom-color: var(--c-border);
+}
+
+/* Light theme: card glass effect */
+[data-theme="light"] .card {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+/* Light theme: action bar */
+[data-theme="light"] .action-bar {
+  background: var(--c-surface-1);
+}
+
+/* Light theme: stat card */
+[data-theme="light"] .stat-card {
+  background: var(--c-surface-1);
+}
+
+/* Light theme: inputs */
+[data-theme="light"] .form-input {
+  background: var(--c-surface-0);
+}
+[data-theme="light"] .form-input:focus {
+  background: white;
+}
+
+/* Light theme: select-mini */
+[data-theme="light"] .select-mini {
+  background-color: var(--c-surface-1);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23555' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+}
+
+/* Light theme: table header */
+[data-theme="light"] .data-table thead th {
+  background: var(--c-surface-0);
+}
+
+/* Light theme: toast */
+[data-theme="light"] .toast {
+  background: white;
+}
+
+/* Light theme: scrollbar */
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: var(--c-surface-0);
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: var(--c-surface-4);
+}
