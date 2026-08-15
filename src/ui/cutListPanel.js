@@ -21,7 +21,7 @@ export function renderCutListPanel(container, cutPieces, onChange) {
       <div class="card anim-fade-in-up" id="cuts-panel" style="animation-delay: 80ms;">
         <div class="card__header">
           <h2 class="card__title">
-            <span class="card__title-icon">✂️</span>
+            <span class="card__title-icon">🪚</span>
             <span data-i18n="cuts.title">${t('cuts.title')}</span>
           </h2>
           <div class="card__actions">

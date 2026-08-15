@@ -27,7 +27,7 @@ export function renderNavbar(container) {
     container.innerHTML = `
       <nav class="navbar" id="main-navbar">
         <div class="navbar__brand">
-          <div class="navbar__logo" aria-hidden="true">✂</div>
+          <div class="navbar__logo" aria-hidden="true">🪚</div>
           <span class="navbar__title" data-i18n="app.title">${i18n.t('app.title')}</span>
         </div>
 
