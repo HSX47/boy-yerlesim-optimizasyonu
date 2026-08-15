@@ -1,0 +1,5 @@
+# https://boy-yerlesim-optimizasyonu.web.app/robots.txt
+User-agent: *
+Allow: /
+
+Sitemap: https://boy-yerlesim-optimizasyonu.web.app/sitemap.xml

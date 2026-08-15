@@ -235,6 +235,8 @@ Sonuç objesi (`OptimizationResult`) her zaman aynı şekli döndürür.
 - Excel rapor dışa aktarım (3 sayfa, maliyet detaylı)
 - Toast bildirim sistemi
 - Stok miktar yetersizliği / sığmayan parça tespit sistemi ve kırmızı uyarı banner'ı
+- Tam SEO yapılandırması (Canonical URL, Open Graph, Twitter Cards, WebApplication JSON-LD Schema)
+- `public/robots.txt` ve `public/sitemap.xml` dosyaları (Arama motoru indeksleme desteği)
 
 ### 🔲 Yapılacak (Sprint 2+)
 - [ ] IndexedDB ile proje kaydetme/yükleme (Dexie)
