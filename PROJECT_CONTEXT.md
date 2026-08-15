@@ -2,9 +2,10 @@
 
 > ⚠️ **ÖNEMLİ NOT — GELECEK AI MODELLERİ İÇİN:**
 > Bu dosya, projenin mevcut durumunu ve mimari kararlarını anlamak için zorunlu referans kaynağıdır.
-> **Her değişiklikten sonra bu dosyayı güncellemelisiniz.** Yeni dosya eklendiyse, mevcut yapı 
+> **1. Her değişiklikten sonra bu dosyayı güncellemelisiniz.** Yeni dosya eklendiyse, mevcut yapı 
 > değiştiyse, önemli bir mimari karar alındıysa veya yeni özellik eklendiyse — bu dosyayı güncelleyin.
-> Bu dosya güncel tutulmadığında, sonraki geliştirici (insan veya AI) projeyi anlayamaz.
+> **2. Her aşamada yapılan değişiklikleri GitHub repository'sine commit ve push yapmalısınız:**
+> Repo URL: `https://github.com/HSX47/boy-yerlesim-optimizasyonu`
 
 ---
 
