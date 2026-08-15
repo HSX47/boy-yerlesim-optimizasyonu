@@ -109,13 +109,13 @@ export function solveBFD({ stockItems, cutPieces, params }) {
   const placedCount = openBars.reduce((sum, bar) => sum + bar.cuts.length, 0);
   const unplacedCount = expandedPieces.length - placedCount;
 
-  return buildResult(openBars, params, unplacedCount);
+  return buildResult(openBars, stockItems, params, unplacedCount);
 }
 
 /**
  * Açık çubuk listesinden OptimizationResult üret
  */
-function buildResult(bars, params, unplacedCount = 0) {
+function buildResult(bars, stockItems, params, unplacedCount = 0) {
   const { minUsableRemnant } = params;
 
   const patterns = bars.map(bar => {
@@ -145,6 +145,34 @@ function buildResult(bars, params, unplacedCount = 0) {
   const totalCuttingCost = totalCuts * cutCost;
   const totalCost = totalMaterialCost + totalCuttingCost;
 
+  // Stok kullanımı ve kalan stok özeti
+  const usedCountMap = new Map();
+  for (const p of patterns) {
+    const sId = p.stockItem.id;
+    usedCountMap.set(sId, (usedCountMap.get(sId) || 0) + 1);
+  }
+
+  const stockSummary = (stockItems || []).map(item => {
+    const usedCount = usedCountMap.get(item.id) || 0;
+    const initialQuantity = item.quantity || 0;
+    const isUnlimited = initialQuantity === 0;
+    const remainingCount = isUnlimited ? Infinity : Math.max(0, initialQuantity - usedCount);
+    const remainingLength = isUnlimited ? Infinity : remainingCount * item.length;
+
+    return {
+      stockItem: item,
+      usedCount,
+      initialQuantity,
+      isUnlimited,
+      remainingCount,
+      remainingLength,
+    };
+  });
+
+  const hasUnlimitedStock = stockSummary.some(s => s.isUnlimited);
+  const totalRemainingCount = hasUnlimitedStock ? Infinity : stockSummary.reduce((sum, s) => sum + s.remainingCount, 0);
+  const totalRemainingLength = hasUnlimitedStock ? Infinity : stockSummary.reduce((sum, s) => sum + s.remainingLength, 0);
+
   // Kullanılabilir artıkları grupla
   const remnantMap = new Map();
   for (const p of patterns) {
@@ -166,6 +194,9 @@ function buildResult(bars, params, unplacedCount = 0) {
     totalCuts,
     totalCuttingCost,
     totalCost,
+    stockSummary,
+    totalRemainingCount,
+    totalRemainingLength,
     usableRemnants,
     unplacedCount,
     executionTimeMs: 0,

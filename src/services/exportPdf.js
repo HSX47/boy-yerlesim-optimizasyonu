@@ -95,19 +95,21 @@ export async function exportPdf(result, stockItems, cutPieces, params) {
   doc.setFontSize(7.5);
   doc.setFont(PDF_FONT, 'bold');
 
-  // Satır 1: Stok ve Fire Oranı
+  const remStockStr = result.totalRemainingCount === Infinity ? t('stock.unlimited') : `${result.totalRemainingCount} ${t('results.pieces')} (${units.format(result.totalRemainingLength)})`;
+
+  // Satır 1: Kullanılan Stok ve Artan Stok
   const row1 = [
     `${t('results.totalStock')}: ${result.totalStockUsed} ${t('results.pieces')}`,
-    `${t('results.wastePercentage')}: %${result.totalWastePercentage.toFixed(1)}`,
+    `${t('results.remainingStock')}: ${remStockStr}`,
   ];
   const row1ColW = contentW / row1.length;
   row1.forEach((text, idx) => {
     doc.text(text, margin + row1ColW * idx + row1ColW / 2, y + 6, { align: 'center' });
   });
 
-  // Satır 2: Toplam Fire ve Testere Payı
+  // Satır 2: Toplam Fire ve Fire Oranı
   const row2 = [
-    `${t('results.totalWaste')}: ${units.format(result.totalWaste)}`,
+    `${t('results.totalWaste')}: ${units.format(result.totalWaste)} (%${result.totalWastePercentage.toFixed(1)})`,
     `${t('params.kerfWidth')}: ${units.format(params.kerfWidth)}`,
   ];
   const row2ColW = contentW / row2.length;

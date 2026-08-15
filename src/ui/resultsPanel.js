@@ -60,6 +60,16 @@ export function renderResultsPanel(container, result, callbacks = {}) {
           </div>
 
           <div class="stat-card">
+            <div class="stat-card__label">${t('results.remainingStock')}</div>
+            <div class="stat-card__value ${result.totalRemainingCount === Infinity ? 'stat-card__value--primary' : result.totalRemainingCount > 0 ? 'stat-card__value--success' : 'stat-card__value--danger'}">
+              ${result.totalRemainingCount === Infinity ? '∞' : result.totalRemainingCount}
+            </div>
+            <div class="stat-card__sub">
+              ${result.totalRemainingLength === Infinity ? t('stock.unlimited') : units.format(result.totalRemainingLength)}
+            </div>
+          </div>
+
+          <div class="stat-card">
             <div class="stat-card__label">${t('results.wastePercentage')}</div>
             <div class="stat-card__value ${result.totalWastePercentage < 10 ? 'stat-card__value--success' : result.totalWastePercentage < 20 ? 'stat-card__value--warning' : 'stat-card__value--danger'}">
               %${result.totalWastePercentage.toFixed(1)}
@@ -85,6 +95,45 @@ export function renderResultsPanel(container, result, callbacks = {}) {
             </div>
           </div>
         </div>
+
+        <!-- Stok Kullanım ve Artan Stok Detayı -->
+        ${(result.stockSummary && result.stockSummary.length > 0) ? `
+          <div style="margin-bottom: var(--sp-5);">
+            <h3 style="font-size: var(--fs-sm); font-weight: var(--fw-semibold); color: var(--c-primary-400); margin-bottom: var(--sp-2);">
+              📦 ${t('results.stockUsageBreakdown')}
+            </h3>
+            <div style="background: var(--c-surface-1); border: 1px solid var(--c-border); border-radius: var(--radius-md); overflow: hidden;">
+              <table class="data-table" style="width: 100%; font-size: 0.85rem;">
+                <thead>
+                  <tr style="background: var(--c-surface-2);">
+                    <th>${t('stock.label')}</th>
+                    <th>${t('stock.length')}</th>
+                    <th>Kullanılan</th>
+                    <th>${t('results.remainingStock')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${result.stockSummary.map(s => `
+                    <tr>
+                      <td><strong>${s.stockItem.label || units.format(s.stockItem.length)}</strong></td>
+                      <td>${units.format(s.stockItem.length)}</td>
+                      <td><span style="color: var(--c-primary-400); font-weight: 600;">${s.usedCount}</span> / ${s.isUnlimited ? '∞' : s.initialQuantity} adet</td>
+                      <td>
+                        ${s.isUnlimited ? `
+                          <span style="color: var(--c-text-muted);">${t('stock.unlimited')}</span>
+                        ` : `
+                          <span style="color: ${s.remainingCount > 0 ? 'var(--c-success-400)' : 'var(--c-text-muted)'}; font-weight: 600;">
+                            ${s.remainingCount} adet (${units.format(s.remainingLength)})
+                          </span>
+                        `}
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ` : ''}
 
         <!-- Kullanılabilir Artıklar -->
         ${result.usableRemnants.length > 0 ? `

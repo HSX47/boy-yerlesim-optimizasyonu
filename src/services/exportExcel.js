@@ -18,12 +18,15 @@ export function exportExcel(result, stockItems, cutPieces, params) {
   const unitLabel = units.primaryUnit;
   const wb = XLSX.utils.book_new();
 
+  const remStockVal = result.totalRemainingCount === Infinity ? t('stock.unlimited') : `${result.totalRemainingCount} ${t('results.pieces')}`;
+
   // ── Sayfa 1: Özet ──
   const summaryData = [
     [t('app.title'), '', '', t('results.cuttingPlan')],
     [],
     [t('results.summary')],
     [t('results.totalStock'), result.totalStockUsed, t('results.pieces')],
+    [t('results.remainingStock'), remStockVal],
     [t('results.totalCuts'), result.totalCuts || 0, t('results.pieces')],
     [t('results.wastePercentage'), `%${result.totalWastePercentage.toFixed(1)}`],
     [t('results.totalWaste'), units.fromMM(result.totalWaste), unitLabel],
@@ -38,6 +41,22 @@ export function exportExcel(result, stockItems, cutPieces, params) {
     [t('params.cutCost'), params.cutCost || 0, t('common.currency')],
     [t('params.algorithm'), params.algorithm === 'bfd' ? t('params.algorithmBFD') : t('params.algorithmFFD')],
   ];
+
+  // Stok kullanım ve artan stok detay tablosu
+  if (result.stockSummary && result.stockSummary.length > 0) {
+    summaryData.push([]);
+    summaryData.push([t('results.stockUsageBreakdown')]);
+    summaryData.push([t('stock.label'), `${t('stock.length')} (${unitLabel})`, 'Kullanılan Adet', t('results.remainingStock')]);
+    for (const s of result.stockSummary) {
+      const remText = s.isUnlimited ? t('stock.unlimited') : `${s.remainingCount} ${t('results.pieces')} (${units.fromMM(s.remainingLength)} ${unitLabel})`;
+      summaryData.push([
+        s.stockItem.label || units.format(s.stockItem.length),
+        units.fromMM(s.stockItem.length),
+        `${s.usedCount} / ${s.isUnlimited ? '∞' : s.initialQuantity}`,
+        remText
+      ]);
+    }
+  }
 
   // Kullanılabilir artıklar
   if (result.usableRemnants.length > 0) {
