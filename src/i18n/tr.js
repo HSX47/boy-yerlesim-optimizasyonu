@@ -28,7 +28,26 @@ export default {
     lightTheme: 'Açık Tema',
     login: 'Giriş Yap',
     signup: 'Üye Ol',
+    logout: 'Çıkış',
     premium: 'Premium',
+  },
+
+  // — Kimlik Doğrulama / Üyelik —
+  auth: {
+    title: 'Kullanıcı Hesabı',
+    subtitle: 'Projelerinizi bulutta saklayın ve her cihazdan erişin',
+    mandatoryNotice: 'Hesaplayıcıyı kullanmak için lütfen giriş yapın veya ücretsiz kaydolun.',
+    loginTab: 'Giriş Yap',
+    signupTab: 'Kayıt Ol',
+    email: 'E-posta Adresi',
+    password: 'Şifre',
+    passwordConfirm: 'Şifre Tekrarı',
+    forgotPasswordLink: 'Şifremi unuttum',
+    loginBtn: 'Giriş Yap',
+    signupBtn: 'Ücretsiz Kaydol',
+    sendResetLink: 'Sıfırlama Bağlantısı Gönder',
+    forgotInstructions: 'Hesabınıza ait e-posta adresinizi girin. Size şifre sıfırlama bağlantısı göndereceğiz.',
+    backToLogin: 'Giriş ekranına dön',
   },
 
   // — Birimler —

@@ -25,6 +25,9 @@ import { showToast } from './ui/toast.js';
 // Services
 import { exportPdf } from './services/exportPdf.js';
 import { exportExcel } from './services/exportExcel.js';
+import { authConfig } from './config/authConfig.js';
+import { onAuthChange } from './services/auth.js';
+import { openAuthModal } from './ui/authModal.js';
 
 // ── Uygulama Durumu ─────────────────────────────────────────
 const project = createProject({
@@ -40,6 +43,13 @@ const project = createProject({
 let lastResult = null;
 let resultsView = null;
 let visualizerView = null;
+
+// Üyelik zorunlu mod (authConfig.requireAuth === true) açıksa ve kullanıcı giriş yapmadıysa modal aç
+onAuthChange((user) => {
+  if (authConfig.requireAuth && !user) {
+    openAuthModal('login');
+  }
+});
 
 // ── İlk Render ──────────────────────────────────────────────
 function init() {

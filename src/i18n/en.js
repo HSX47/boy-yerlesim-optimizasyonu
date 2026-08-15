@@ -28,7 +28,26 @@ export default {
     lightTheme: 'Light Theme',
     login: 'Log In',
     signup: 'Sign Up',
+    logout: 'Log Out',
     premium: 'Premium',
+  },
+
+  // — Authentication —
+  auth: {
+    title: 'User Account',
+    subtitle: 'Save projects in the cloud and access from any device',
+    mandatoryNotice: 'Please log in or register for free to use the calculator.',
+    loginTab: 'Log In',
+    signupTab: 'Sign Up',
+    email: 'Email Address',
+    password: 'Password',
+    passwordConfirm: 'Confirm Password',
+    forgotPasswordLink: 'Forgot password?',
+    loginBtn: 'Log In',
+    signupBtn: 'Sign Up Free',
+    sendResetLink: 'Send Reset Link',
+    forgotInstructions: 'Enter your account email. We will send you a password reset link.',
+    backToLogin: 'Back to Log In',
   },
 
   // — Units —
