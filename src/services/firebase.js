@@ -12,10 +12,10 @@ import {
 } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "AIzaSy_placeholder_key_boy_yerlesim",
-  authDomain: "boy-yerlesim-optimizasyonu.firebaseapp.com",
-  projectId: "boy-yerlesim-optimizasyonu",
-  storageBucket: "boy-yerlesim-optimizasyonu.appspot.com",
+  apiKey: "AIzaSy_placeholder_key_profil_kesim",
+  authDomain: "profil-kesim-hesaplayici.firebaseapp.com",
+  projectId: "profil-kesim-hesaplayici",
+  storageBucket: "profil-kesim-hesaplayici.appspot.com",
   messagingSenderId: "100000000000",
   appId: "1:100000000000:web:abcdef123456"
 };
