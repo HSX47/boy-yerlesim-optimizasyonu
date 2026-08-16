@@ -26,7 +26,7 @@ import { showToast } from './ui/toast.js';
 import { exportPdf } from './services/exportPdf.js';
 import { exportExcel } from './services/exportExcel.js';
 import { authConfig } from './config/authConfig.js';
-import { onAuthChange } from './services/auth.js';
+import { onAuthChange, getCurrentUser } from './services/auth.js';
 import { openAuthModal } from './ui/authModal.js';
 import { openContactModal } from './ui/contactModal.js';
 
@@ -125,6 +125,12 @@ function init() {
 // ── Optimize İşlevi ─────────────────────────────────────────
 function handleOptimize() {
   const t = (key) => i18n.t(key);
+
+  if (project.params.algorithm === 'branchBound' && !getCurrentUser()) {
+    showToast('Dal ve Sınır (Branch & Bound) algoritmasını kullanmak için lütfen ücretsiz üye olun veya giriş yapın.', 'warning');
+    openAuthModal('signup');
+    return;
+  }
 
   // Doğrulama
   const validStocks = project.stockItems.filter(s => s.length > 0);

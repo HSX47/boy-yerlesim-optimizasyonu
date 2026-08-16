@@ -119,8 +119,9 @@ export default {
     algorithm: 'Algoritma',
     algorithmFFD: 'İlk Sığan Azalan (FFD)',
     algorithmBFD: 'En İyi Sığan Azalan (BFD)',
-    algorithmBB: 'Dal ve Sınır (Optimal)',
+    algorithmBB: 'Dal ve Sınır (Branch & Bound)',
     algorithmBBPremium: '🔒 Premium',
+    algorithmBBMembersOnly: '🔒 Üyelere Özel',
   },
 
   // — Aksiyon Butonları —

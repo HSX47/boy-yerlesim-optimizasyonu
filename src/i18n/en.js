@@ -121,6 +121,7 @@ export default {
     algorithmBFD: 'Best Fit Decreasing (BFD)',
     algorithmBB: 'Branch & Bound (Optimal)',
     algorithmBBPremium: '🔒 Premium',
+    algorithmBBMembersOnly: '🔒 Members Only',
   },
 
   // — Action Buttons —

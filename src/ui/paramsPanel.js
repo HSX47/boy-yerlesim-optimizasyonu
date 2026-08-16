@@ -1,9 +1,8 @@
-/**
- * Optimizasyon Parametreleri Paneli
- */
-
 import { i18n } from '../i18n/index.js';
 import { units } from '../core/units.js';
+import { getCurrentUser, onAuthChange } from '../services/auth.js';
+import { openAuthModal } from './authModal.js';
+import { showToast } from './toast.js';
 
 /**
  * @param {HTMLElement} container
@@ -12,9 +11,16 @@ import { units } from '../core/units.js';
  */
 export function renderParamsPanel(container, params, onChange) {
   const t = (key) => i18n.t(key);
+  let currentUser = getCurrentUser();
+
+  onAuthChange((user) => {
+    currentUser = user;
+    render();
+  });
 
   function render() {
     const unitLabel = units.primaryUnit;
+    const isUserLoggedIn = !!currentUser;
 
     container.innerHTML = `
       <div class="card anim-fade-in-up" id="params-panel" style="animation-delay: 160ms;">
@@ -60,7 +66,7 @@ export function renderParamsPanel(container, params, onChange) {
                 ${t('params.algorithmBFD')}
               </option>
               <option value="branchBound" ${params.algorithm === 'branchBound' ? 'selected' : ''}>
-                ${t('params.algorithmBB')} ⭐
+                ${t('params.algorithmBB')} ${isUserLoggedIn ? '⭐' : t('params.algorithmBBMembersOnly')}
               </option>
             </select>
           </div>
@@ -88,7 +94,17 @@ export function renderParamsPanel(container, params, onChange) {
     });
 
     container.querySelector('#algo-select')?.addEventListener('change', (e) => {
-      params.algorithm = e.target.value;
+      const selectedAlgo = e.target.value;
+      if (selectedAlgo === 'branchBound' && !currentUser) {
+        showToast('Dal ve Sınır (Branch & Bound) algoritmasını kullanmak için lütfen ücretsiz üye olun veya giriş yapın.', 'warning');
+        openAuthModal('signup');
+        // Revert to BFD for non-logged-in users
+        params.algorithm = 'bfd';
+        e.target.value = 'bfd';
+        onChange(params);
+        return;
+      }
+      params.algorithm = selectedAlgo;
       onChange(params);
     });
   }
