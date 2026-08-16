@@ -28,6 +28,7 @@ import { exportExcel } from './services/exportExcel.js';
 import { authConfig } from './config/authConfig.js';
 import { onAuthChange } from './services/auth.js';
 import { openAuthModal } from './ui/authModal.js';
+import { openContactModal } from './ui/contactModal.js';
 
 // ── Uygulama Durumu ─────────────────────────────────────────
 const project = createProject({
@@ -99,6 +100,11 @@ function init() {
 
   // Sıfırla butonu
   document.getElementById('reset-btn').addEventListener('click', handleReset);
+
+  // Footer İletişim Butonu
+  document.getElementById('footer-contact-btn')?.addEventListener('click', () => {
+    openContactModal();
+  });
 
   // i18n ilk güncelleme
   i18n.setLocale(i18n.locale);

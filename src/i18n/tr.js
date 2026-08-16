@@ -29,7 +29,21 @@ export default {
     login: 'Giriş Yap',
     signup: 'Üye Ol',
     logout: 'Çıkış',
+    contact: 'İletişim',
     premium: 'Premium',
+  },
+
+  // — İletişim Formu —
+  contact: {
+    title: 'Bize Ulaşın',
+    subtitle: 'Soru, öneri ve görüşlerinizi bize iletebilirsiniz.',
+    name: 'Adınız Soyadınız',
+    email: 'E-posta Adresiniz',
+    subject: 'Konu',
+    message: 'Mesajınız',
+    send: 'Mesaj Gönder',
+    sending: 'Gönderiliyor...',
+    success: 'Mesajınız başarıyla iletildi! Teşekkür ederiz.',
   },
 
   // — Kimlik Doğrulama / Üyelik —

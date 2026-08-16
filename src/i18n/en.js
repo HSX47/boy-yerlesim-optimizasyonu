@@ -29,7 +29,21 @@ export default {
     login: 'Log In',
     signup: 'Sign Up',
     logout: 'Log Out',
+    contact: 'Contact',
     premium: 'Premium',
+  },
+
+  // — Contact Form —
+  contact: {
+    title: 'Contact Us',
+    subtitle: 'Send us your questions, feedback or inquiries.',
+    name: 'Full Name',
+    email: 'Email Address',
+    subject: 'Subject',
+    message: 'Your Message',
+    send: 'Send Message',
+    sending: 'Sending...',
+    success: 'Your message has been sent successfully! Thank you.',
   },
 
   // — Authentication —
