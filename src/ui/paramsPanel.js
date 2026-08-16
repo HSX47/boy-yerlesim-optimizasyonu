@@ -59,8 +59,8 @@ export function renderParamsPanel(container, params, onChange) {
               <option value="bfd" ${params.algorithm === 'bfd' ? 'selected' : ''}>
                 ${t('params.algorithmBFD')}
               </option>
-              <option value="branchBound" disabled>
-                ${t('params.algorithmBB')} ${t('params.algorithmBBPremium')}
+              <option value="branchBound" ${params.algorithm === 'branchBound' ? 'selected' : ''}>
+                ${t('params.algorithmBB')} ⭐
               </option>
             </select>
           </div>

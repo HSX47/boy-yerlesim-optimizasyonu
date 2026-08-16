@@ -7,6 +7,7 @@
 
 import { solveFFD } from './algorithms/ffd.js';
 import { solveBFD } from './algorithms/bestFit.js';
+import { solveBranchBound } from './algorithms/branchBound.js';
 
 /**
  * Optimizasyonu çalıştır
@@ -31,6 +32,9 @@ export function runOptimization({ stockItems, cutPieces, params }) {
 
   let result;
   switch (params.algorithm) {
+    case 'branchBound':
+      result = solveBranchBound({ stockItems: filteredStocks, cutPieces: filteredCuts, params });
+      break;
     case 'ffd':
       result = solveFFD({ stockItems: filteredStocks, cutPieces: filteredCuts, params });
       break;

@@ -39,7 +39,7 @@ export function exportExcel(result, stockItems, cutPieces, params) {
     [t('params.kerfWidth'), units.fromMM(params.kerfWidth), unitLabel],
     [t('params.minRemnant'), units.fromMM(params.minUsableRemnant), unitLabel],
     [t('params.cutCost'), params.cutCost || 0, t('common.currency')],
-    [t('params.algorithm'), params.algorithm === 'bfd' ? t('params.algorithmBFD') : t('params.algorithmFFD')],
+    [t('params.algorithm'), params.algorithm === 'branchBound' ? t('params.algorithmBB') : params.algorithm === 'bfd' ? t('params.algorithmBFD') : t('params.algorithmFFD')],
   ];
 
   // Stok kullanım ve artan stok detay tablosu
