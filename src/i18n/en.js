@@ -193,7 +193,7 @@ export default {
 
   // — Footer —
   footer: {
-    copyright: '© {year} CutOptimizer — All rights reserved.',
+    copyright: '© {year} Cut Calculator — All rights reserved.',
     version: 'v{version}',
   },
 

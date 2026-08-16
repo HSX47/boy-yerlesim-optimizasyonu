@@ -193,7 +193,7 @@ export default {
 
   // — Footer —
   footer: {
-    copyright: '© {year} KesimOptimizer — Tüm hakları saklıdır.',
+    copyright: '© {year} Kesim Hesaplayıcı — Tüm hakları saklıdır.',
     version: 'v{version}',
   },
 
