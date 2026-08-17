@@ -17,7 +17,7 @@
  * @returns {import('../models.js').OptimizationResult}
  */
 export function solveBranchBound({ stockItems, cutPieces, params }) {
-  const { kerfWidth, minUsableRemnant } = params;
+  const { kerfWidth } = params;
 
   // 1. Tüm kesim parçalarını adet kadar genişlet ve büyükten küçüğe sırala
   const expandedPieces = [];
@@ -38,11 +38,11 @@ export function solveBranchBound({ stockItems, cutPieces, params }) {
   }
 
   // 2. Sezgisel başlangıç çözümleri (Best-Fit ve First-Fit çözümlerini karşılaştır)
-  const bfdSolution = runHeuristicBestFit(sortedStocks, expandedPieces, kerfWidth, stockQuantityLimits);
-  const ffdSolution = runHeuristicFirstFit(sortedStocks, expandedPieces, kerfWidth, stockQuantityLimits);
+  const bfdBars = runHeuristicBestFit(sortedStocks, expandedPieces, kerfWidth, stockQuantityLimits);
+  const ffdBars = runHeuristicFirstFit(sortedStocks, expandedPieces, kerfWidth, stockQuantityLimits);
 
-  let bestSolution = bfdSolution.length <= ffdSolution.length ? bfdSolution : ffdSolution;
-  let bestBarCount = bestSolution.length;
+  let bestBars = bfdBars.length <= ffdBars.length ? bfdBars : ffdBars;
+  let bestBarCount = bestBars.length;
 
   // Teorik alt sınır (Lower Bound)
   const totalCutLength = expandedPieces.reduce((acc, p) => acc + p.length, 0);
@@ -51,7 +51,7 @@ export function solveBranchBound({ stockItems, cutPieces, params }) {
 
   // Eğer sezgisel çözüm zaten teorik alt sınıra ulaştıysa veya parça sayısı > 25 ise direkt en iyisini dön!
   if ((bestBarCount <= lowerBound && bestBarCount > 0) || expandedPieces.length > 25) {
-    return formatOptimizationResult(bestSolution, stockItems, params);
+    return buildResult(bestBars, stockItems, params, 0);
   }
 
   // 3. Hassas Branch & Bound Arama Alanı (Küçük/Orta boy listeler için exact arama)
@@ -79,7 +79,7 @@ export function solveBranchBound({ stockItems, cutPieces, params }) {
     if (pieceIndex >= expandedPieces.length) {
       if (currentBars.length < bestBarCount) {
         bestBarCount = currentBars.length;
-        bestSolution = deepCopyBars(currentBars);
+        bestBars = deepCopyBars(currentBars);
       }
       return;
     }
@@ -100,13 +100,11 @@ export function solveBranchBound({ stockItems, cutPieces, params }) {
 
         bar.cuts.push({ ...currentPiece });
         bar.remaining -= spaceNeeded;
-        bar.usedLength += spaceNeeded;
 
         branchAndBound(pieceIndex + 1, currentBars, currentStockLimits);
 
         bar.cuts.pop();
         bar.remaining += spaceNeeded;
-        bar.usedLength -= spaceNeeded;
 
         if (bestBarCount <= lowerBound) return;
       }
@@ -119,13 +117,8 @@ export function solveBranchBound({ stockItems, cutPieces, params }) {
         const leftLimit = currentStockLimits.get(stock.id);
         if (leftLimit > 0 && stock.length >= currentPiece.length) {
           const newBar = {
-            id: stock.id + '_bar_' + (currentBars.length + 1),
-            stockId: stock.id,
-            stockLength: stock.length,
-            stockLabel: stock.label,
-            unitPrice: stock.unitPrice,
+            stockItem: stock,
             cuts: [{ ...currentPiece }],
-            usedLength: currentPiece.length,
             remaining: stock.length - currentPiece.length
           };
 
@@ -151,7 +144,7 @@ export function solveBranchBound({ stockItems, cutPieces, params }) {
     console.warn('Branch & Bound backtrack interrupted:', err);
   }
 
-  return formatOptimizationResult(bestSolution, stockItems, params);
+  return buildResult(bestBars, stockItems, params, 0);
 }
 
 /**
@@ -184,20 +177,14 @@ function runHeuristicBestFit(sortedStocks, expandedPieces, kerfWidth, stockQuant
       const actualKerf = bar.cuts.length > 0 ? kerfWidth : 0;
       bar.cuts.push({ ...piece });
       bar.remaining -= (piece.length + actualKerf);
-      bar.usedLength += (piece.length + actualKerf);
     } else {
       for (const stock of sortedStocks) {
         const limit = stockLimits.get(stock.id);
         if (limit > 0 && stock.length >= piece.length) {
           stockLimits.set(stock.id, limit - 1);
           openBars.push({
-            id: stock.id + '_bar_' + (openBars.length + 1),
-            stockId: stock.id,
-            stockLength: stock.length,
-            stockLabel: stock.label,
-            unitPrice: stock.unitPrice,
+            stockItem: stock,
             cuts: [{ ...piece }],
-            usedLength: piece.length,
             remaining: stock.length - piece.length
           });
           break;
@@ -227,7 +214,6 @@ function runHeuristicFirstFit(sortedStocks, expandedPieces, kerfWidth, stockQuan
       if (bar.remaining >= needed) {
         bar.cuts.push({ ...piece });
         bar.remaining -= needed;
-        bar.usedLength += needed;
         placed = true;
         break;
       }
@@ -239,13 +225,8 @@ function runHeuristicFirstFit(sortedStocks, expandedPieces, kerfWidth, stockQuan
         if (limit > 0 && stock.length >= piece.length) {
           stockLimits.set(stock.id, limit - 1);
           openBars.push({
-            id: stock.id + '_bar_' + (openBars.length + 1),
-            stockId: stock.id,
-            stockLength: stock.length,
-            stockLabel: stock.label,
-            unitPrice: stock.unitPrice,
+            stockItem: stock,
             cuts: [{ ...piece }],
-            usedLength: piece.length,
             remaining: stock.length - piece.length
           });
           break;
@@ -259,129 +240,108 @@ function runHeuristicFirstFit(sortedStocks, expandedPieces, kerfWidth, stockQuan
 
 function deepCopyBars(bars) {
   return bars.map(bar => ({
-    ...bar,
+    stockItem: { ...bar.stockItem },
+    remaining: bar.remaining,
     cuts: bar.cuts.map(c => ({ ...c }))
   }));
 }
 
 /**
- * Optimizasyon sonucunu formatla
+ * standart OptimizationResult üret
  */
-function formatOptimizationResult(openBars, stockItems, params) {
+function buildResult(bars, stockItems, params, unplacedCount = 0) {
   const { kerfWidth, minUsableRemnant, cutCost = 0 } = params;
 
-  let totalWaste = 0;
-  let totalMaterialCost = 0;
-  let totalCuts = 0;
-  const usableRemnantsMap = new Map();
-  const stockUsageCount = new Map();
-
-  const formattedBars = openBars.map((bar, barIdx) => {
-    stockUsageCount.set(bar.stockId, (stockUsageCount.get(bar.stockId) || 0) + 1);
-
-    const barCuts = [];
+  const patterns = bars.map(bar => {
     let currentPos = 0;
-
-    for (let i = 0; i < bar.cuts.length; i++) {
-      const cut = bar.cuts[i];
-      barCuts.push({
-        id: cut.id || `cut_${barIdx}_${i}`,
-        label: cut.label || `${cut.length} mm`,
-        length: cut.length,
-        startPos: currentPos,
-        endPos: currentPos + cut.length,
-      });
-
-      currentPos += cut.length;
-      if (i < bar.cuts.length - 1) {
+    const formattedCuts = bar.cuts.map((piece, idx) => {
+      const cutObj = {
+        piece: { ...piece },
+        position: currentPos,
+      };
+      currentPos += piece.length;
+      if (idx < bar.cuts.length - 1) {
         currentPos += kerfWidth;
       }
-    }
+      return cutObj;
+    });
 
-    const cutCountOnBar = bar.cuts.length;
-    totalCuts += cutCountOnBar;
-
-    const endWaste = bar.stockLength - currentPos;
-    const kerfWasteOnBar = Math.max(0, bar.cuts.length - 1) * kerfWidth;
-    const wasteOnBar = kerfWasteOnBar + endWaste;
-
-    totalWaste += wasteOnBar;
-    totalMaterialCost += (bar.unitPrice || 0);
-
-    if (endWaste >= minUsableRemnant) {
-      const roundedRem = Math.round(endWaste * 100) / 100;
-      usableRemnantsMap.set(roundedRem, (usableRemnantsMap.get(roundedRem) || 0) + 1);
-    }
+    const usedLength = currentPos;
+    const leftover = bar.stockItem.length - usedLength;
+    const usableRemnant = leftover >= minUsableRemnant ? leftover : 0;
+    const wasteLength = leftover - usableRemnant;
 
     return {
-      barIndex: barIdx + 1,
-      stockId: bar.stockId,
-      stockLength: bar.stockLength,
-      stockLabel: bar.stockLabel,
-      unitPrice: bar.unitPrice || 0,
-      cuts: barCuts,
-      wasteLength: Math.max(0, endWaste),
-      wastePercentage: bar.stockLength > 0 ? (wasteOnBar / bar.stockLength) * 100 : 0,
-      usedLength: currentPos,
+      stockItem: bar.stockItem,
+      cuts: formattedCuts,
+      usedLength,
+      wasteLength,
+      usableRemnant,
+      wastePercentage: bar.stockItem.length > 0 ? (wasteLength / bar.stockItem.length) * 100 : 0,
     };
   });
 
-  const totalStockLength = formattedBars.reduce((sum, b) => sum + b.stockLength, 0);
-  const totalWastePercentage = totalStockLength > 0 ? (totalWaste / totalStockLength) * 100 : 0;
+  const totalStockLength = patterns.reduce((s, p) => s + p.stockItem.length, 0);
+  const totalWaste = patterns.reduce((s, p) => s + p.wasteLength, 0);
+  const totalMaterialCost = patterns.reduce((s, p) => s + (p.stockItem.unitPrice || 0), 0);
+  const totalCuts = patterns.reduce((s, p) => s + p.cuts.length, 0);
   const totalCuttingCost = totalCuts * cutCost;
   const totalCost = totalMaterialCost + totalCuttingCost;
 
-  const usableRemnants = Array.from(usableRemnantsMap.entries())
-    .map(([length, count]) => ({ length, count }))
-    .sort((a, b) => b.length - a.length);
+  // Stok kullanımı ve kalan stok özeti
+  const usedCountMap = new Map();
+  for (const p of patterns) {
+    const sId = p.stockItem.id;
+    usedCountMap.set(sId, (usedCountMap.get(sId) || 0) + 1);
+  }
 
-  // Stok bazlı kalan stok hesabı
-  let totalRemainingCount = 0;
-  let totalRemainingLength = 0;
-  let hasUnlimited = false;
-
-  const stockSummary = stockItems.map(stock => {
-    const usedCount = stockUsageCount.get(stock.id) || 0;
-    const initialQuantity = stock.quantity || 0;
+  const stockSummary = (stockItems || []).map(item => {
+    const usedCount = usedCountMap.get(item.id) || 0;
+    const initialQuantity = item.quantity || 0;
     const isUnlimited = initialQuantity === 0;
-
-    let remainingCount = 0;
-    let remainingLength = 0;
-
-    if (isUnlimited) {
-      hasUnlimited = true;
-      remainingCount = Infinity;
-      remainingLength = Infinity;
-    } else {
-      remainingCount = Math.max(0, initialQuantity - usedCount);
-      remainingLength = remainingCount * stock.length;
-      totalRemainingCount += remainingCount;
-      totalRemainingLength += remainingLength;
-    }
+    const remainingCount = isUnlimited ? Infinity : Math.max(0, initialQuantity - usedCount);
+    const remainingLength = isUnlimited ? Infinity : remainingCount * item.length;
 
     return {
-      stockItem: stock,
+      stockItem: item,
       usedCount,
       initialQuantity,
       isUnlimited,
       remainingCount,
-      remainingLength
+      remainingLength,
     };
   });
 
+  const hasUnlimitedStock = stockSummary.some(s => s.isUnlimited);
+  const totalRemainingCount = hasUnlimitedStock ? Infinity : stockSummary.reduce((sum, s) => sum + s.remainingCount, 0);
+  const totalRemainingLength = hasUnlimitedStock ? Infinity : stockSummary.reduce((sum, s) => sum + s.remainingLength, 0);
+
+  // Kullanılabilir artıkları grupla
+  const remnantMap = new Map();
+  for (const p of patterns) {
+    if (p.usableRemnant > 0) {
+      const key = Math.round(p.usableRemnant);
+      remnantMap.set(key, (remnantMap.get(key) || 0) + 1);
+    }
+  }
+  const usableRemnants = Array.from(remnantMap.entries())
+    .map(([length, count]) => ({ length, count }))
+    .sort((a, b) => b.length - a.length);
+
   return {
-    totalStockUsed: formattedBars.length,
-    totalRemainingCount: hasUnlimited ? Infinity : totalRemainingCount,
-    totalRemainingLength: hasUnlimited ? Infinity : totalRemainingLength,
-    stockSummary,
+    patterns,
+    totalStockUsed: patterns.length,
     totalWaste,
-    totalWastePercentage,
-    totalCuts,
+    totalWastePercentage: totalStockLength > 0 ? (totalWaste / totalStockLength) * 100 : 0,
     totalMaterialCost,
+    totalCuts,
     totalCuttingCost,
     totalCost,
-    usedBars: formattedBars,
+    stockSummary,
+    totalRemainingCount,
+    totalRemainingLength,
     usableRemnants,
+    unplacedCount,
     executionTimeMs: 0,
   };
 }
