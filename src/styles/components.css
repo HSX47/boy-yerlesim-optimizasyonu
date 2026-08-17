@@ -10,18 +10,25 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: var(--navbar-height);
+  min-height: var(--navbar-height);
   padding: 0 var(--sp-6);
-  background: rgba(15, 18, 30, 0.8);
+  background: rgba(15, 18, 30, 0.9);
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
   border-bottom: 1px solid var(--c-border);
+}
+
+.navbar__header-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
 }
 
 .navbar__brand {
   display: flex;
   align-items: center;
   gap: var(--sp-3);
+  flex-shrink: 0;
 }
 
 .navbar__logo {
@@ -36,6 +43,7 @@
   font-weight: var(--fw-bold);
   color: white;
   box-shadow: var(--shadow-glow);
+  flex-shrink: 0;
 }
 
 .navbar__title {
@@ -46,12 +54,40 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
   letter-spacing: -0.02em;
+  white-space: nowrap;
 }
 
-.navbar__controls {
+.navbar__settings {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
+}
+
+.navbar__auth-area {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.user-badge {
+  font-size: 0.8rem;
+  color: var(--c-text-muted);
+  background: var(--c-surface-2);
+  padding: 4px 10px;
+  border-radius: var(--r-full);
+  border: 1px solid var(--c-border);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.user-badge__email {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  color: var(--c-text);
 }
 
 /* ── Dropdown / Select ───────────────────────────────────── */
@@ -567,17 +603,26 @@ input[type="number"] {
 
 @media (max-width: 768px) {
   .navbar {
+    display: flex;
+    flex-direction: column;
     height: auto;
     min-height: 56px;
-    padding: var(--sp-2) var(--sp-3);
-    flex-wrap: wrap;
-    row-gap: 6px;
-    column-gap: 8px;
+    padding: 8px 12px;
+    gap: 8px;
+    background: rgba(15, 18, 30, 0.95);
+    border-bottom: 1px solid var(--c-border);
+  }
+
+  .navbar__header-row {
+    display: flex;
+    align-items: center;
     justify-content: space-between;
+    width: 100%;
   }
 
   .navbar__brand {
-    gap: var(--sp-2);
+    gap: 8px;
+    flex-shrink: 0;
   }
 
   .navbar__logo {
@@ -587,73 +632,73 @@ input[type="number"] {
   }
 
   .navbar__title {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    font-weight: 700;
   }
 
-  .navbar__controls {
+  .navbar__settings {
     display: flex;
     align-items: center;
-    gap: 4px;
-    flex-wrap: wrap;
-    justify-content: flex-end;
+    gap: 6px;
+    flex-shrink: 0;
   }
 
   .navbar__auth-area {
-    gap: 4px !important;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    width: 100%;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 6px;
   }
 
   .navbar__auth-area .btn {
-    padding: 3px 8px !important;
-    font-size: 0.75rem !important;
-    height: 30px;
+    padding: 4px 12px !important;
+    font-size: 0.8rem !important;
+    height: 32px;
+    border-radius: var(--r-md);
   }
 
   .user-badge {
-    padding: 2px 8px !important;
-    font-size: 0.75rem !important;
-    height: 30px;
+    padding: 4px 10px !important;
+    font-size: 0.8rem !important;
+    height: 32px;
   }
 
-  .user-badge span:nth-child(2) {
-    max-width: 90px !important;
+  .user-badge__email {
+    max-width: 130px !important;
   }
 
   .select-mini {
-    padding: 3px 20px 3px 6px !important;
+    padding: 4px 22px 4px 8px !important;
     font-size: 0.75rem !important;
-    height: 30px;
+    height: 32px;
+    border-radius: var(--r-sm);
   }
 
   .btn--icon {
-    width: 30px !important;
-    height: 30px !important;
+    width: 32px !important;
+    height: 32px !important;
     padding: 0 !important;
   }
 }
 
 @media (max-width: 520px) {
   .navbar {
-    padding: 6px 10px;
-  }
-
-  .navbar__brand {
-    flex-shrink: 0;
+    padding: 8px 10px;
   }
 
   .navbar__title {
     font-size: 0.85rem;
-    max-width: 110px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
-  .user-badge span:nth-child(2) {
-    max-width: 65px !important;
+  .user-badge__email {
+    max-width: 90px !important;
   }
 
   .action-bar {
-    padding: 8px 12px;
+    padding: 10px 12px;
     gap: 8px;
     display: flex;
     flex-direction: row;
