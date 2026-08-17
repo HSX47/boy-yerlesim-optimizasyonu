@@ -52,11 +52,17 @@ export function solveBranchBound({ stockItems, cutPieces, params }) {
 
   // Branch & Bound Arama Alanı
   const startTime = performance.now();
-  const TIME_LIMIT_MS = 2500; // Max 2.5 saniye arama sınırı
+  const TIME_LIMIT_MS = 1000; // Max 1.0 saniye arama sınırı
+  const MAX_NODES = 150000;    // Max 150.000 düğüm inceleme sınırı
+  let nodeCount = 0;
+  let timedOut = false;
 
   function branchAndBound(pieceIndex, currentBars, currentStockLimits) {
-    // Durdurma Kriteri 1: Zaman sınırı aşıldıysa sonlandır
-    if (performance.now() - startTime > TIME_LIMIT_MS) {
+    if (timedOut) return;
+
+    nodeCount++;
+    if (nodeCount > MAX_NODES || (nodeCount % 500 === 0 && performance.now() - startTime > TIME_LIMIT_MS)) {
+      timedOut = true;
       return;
     }
 
@@ -80,6 +86,7 @@ export function solveBranchBound({ stockItems, cutPieces, params }) {
     const triedCapacities = new Set();
 
     for (let i = 0; i < currentBars.length; i++) {
+      if (timedOut) return;
       const bar = currentBars[i];
       const actualKerf = bar.cuts.length > 0 ? kerfWidth : 0;
       const spaceNeeded = currentPiece.length + actualKerf;
@@ -108,8 +115,9 @@ export function solveBranchBound({ stockItems, cutPieces, params }) {
     }
 
     // Seçenek B: Yeni bir stok çubuğu aç (Mevcut limitler elveriyorsa)
-    if (currentBars.length + 1 < bestBarCount) {
+    if (!timedOut && currentBars.length + 1 < bestBarCount) {
       for (const stock of sortedStocks) {
+        if (timedOut) return;
         const leftLimit = currentStockLimits.get(stock.id);
         if (leftLimit > 0 && stock.length >= currentPiece.length) {
           // Yeni bar oluştur
