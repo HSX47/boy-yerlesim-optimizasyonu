@@ -12,12 +12,12 @@ import {
 } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "AIzaSy_placeholder_key_profil_kesim",
+  apiKey: "AIzaSyBlD1SvjpRG9A_dHDsPxLUVktpQPV--Y8k",
   authDomain: "profil-kesim-hesaplayici.firebaseapp.com",
   projectId: "profil-kesim-hesaplayici",
-  storageBucket: "profil-kesim-hesaplayici.appspot.com",
-  messagingSenderId: "100000000000",
-  appId: "1:100000000000:web:abcdef123456"
+  storageBucket: "profil-kesim-hesaplayici.firebasestorage.app",
+  messagingSenderId: "279506136083",
+  appId: "1:279506136083:web:91701a05527345030b63e6"
 };
 
 const app = initializeApp(firebaseConfig);
