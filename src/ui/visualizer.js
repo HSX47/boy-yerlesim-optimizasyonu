@@ -136,11 +136,11 @@ export function renderVisualizer(container, result) {
             <span>${t('visualizer.title')}</span>
           </h2>
         </div>
-        <div style="overflow-x: auto; overflow-y: hidden;">
+        <div style="overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; width: 100%; max-width: 100%;">
           <svg xmlns="http://www.w3.org/2000/svg" 
                viewBox="0 0 ${svgWidth} ${svgHeight}" 
                width="100%" 
-               style="min-width: 600px;">
+               style="min-width: 550px; display: block;">
             <!-- Renk Açıklaması (Legend) -->
             ${renderLegend(colorMap, svgWidth)}
             ${barsHtml}
