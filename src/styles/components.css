@@ -565,40 +565,117 @@ input[type="number"] {
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .navbar {
-    padding: 0 var(--sp-3);
-    gap: var(--sp-2);
+    height: auto;
+    min-height: 56px;
+    padding: var(--sp-2) var(--sp-3);
+    flex-wrap: wrap;
+    row-gap: 6px;
+    column-gap: 8px;
+    justify-content: space-between;
   }
 
   .navbar__brand {
     gap: var(--sp-2);
-    min-width: 0;
-    flex-shrink: 1;
+  }
+
+  .navbar__logo {
+    width: 32px;
+    height: 32px;
+    font-size: 15px;
   }
 
   .navbar__title {
-    font-size: var(--fs-sm);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 130px;
+    font-size: 0.9rem;
   }
 
   .navbar__controls {
-    gap: var(--sp-1);
-    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .navbar__auth-area {
+    gap: 4px !important;
+  }
+
+  .navbar__auth-area .btn {
+    padding: 3px 8px !important;
+    font-size: 0.75rem !important;
+    height: 30px;
   }
 
   .user-badge {
-    padding: 2px 6px !important;
+    padding: 2px 8px !important;
     font-size: 0.75rem !important;
+    height: 30px;
   }
 
   .user-badge span:nth-child(2) {
-    max-width: 75px !important;
+    max-width: 90px !important;
   }
 
+  .select-mini {
+    padding: 3px 20px 3px 6px !important;
+    font-size: 0.75rem !important;
+    height: 30px;
+  }
+
+  .btn--icon {
+    width: 30px !important;
+    height: 30px !important;
+    padding: 0 !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .navbar {
+    padding: 6px 10px;
+  }
+
+  .navbar__brand {
+    flex-shrink: 0;
+  }
+
+  .navbar__title {
+    font-size: 0.85rem;
+    max-width: 110px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .user-badge span:nth-child(2) {
+    max-width: 65px !important;
+  }
+
+  .action-bar {
+    padding: 8px 12px;
+    gap: 8px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .action-bar #optimize-btn {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.85rem;
+    padding: 10px 12px;
+  }
+
+  .action-bar #reset-btn {
+    flex-shrink: 0;
+    font-size: 0.8rem;
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 640px) {
   .stat-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: var(--sp-3);
@@ -630,34 +707,11 @@ input[type="number"] {
   .card__title {
     font-size: var(--fs-md);
   }
-
-  .action-bar {
-    padding: var(--sp-3) var(--sp-3);
-    gap: var(--sp-2);
-  }
-
-  .action-bar .btn--lg {
-    padding: var(--sp-3) var(--sp-5);
-    font-size: var(--fs-base);
-  }
 }
 
 @media (max-width: 400px) {
-  .navbar__title {
-    max-width: 90px;
-  }
-
   .stat-grid {
     grid-template-columns: 1fr;
-  }
-
-  .action-bar {
-    flex-wrap: wrap;
-  }
-
-  .action-bar .btn {
-    flex: 1;
-    min-width: 120px;
   }
 }
 
