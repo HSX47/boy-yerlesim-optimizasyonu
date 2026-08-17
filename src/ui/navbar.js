@@ -33,11 +33,8 @@ export function renderNavbar(container) {
         </div>
 
         <div class="navbar__controls">
-          <!-- Üyelik & İletişim Alanı -->
+          <!-- Üyelik Alanı -->
           <div class="navbar__auth-area" style="display: flex; align-items: center; gap: var(--sp-2);">
-            <button id="nav-contact-btn" class="btn btn--sm btn--ghost" style="font-size: 0.8rem;">
-              ✉️ ${i18n.t('nav.contact')}
-            </button>
 
             ${currentUser ? `
               <div class="user-badge" style="font-size: 0.8rem; color: var(--c-text-muted); background: var(--c-surface-2); padding: 4px 10px; border-radius: var(--radius-full); border: 1px solid var(--c-border); display: flex; align-items: center; gap: 6px;">
@@ -100,10 +97,6 @@ export function renderNavbar(container) {
     container.querySelector('#theme-toggle')?.addEventListener('click', () => {
       theme.toggle();
       render();
-    });
-
-    container.querySelector('#nav-contact-btn')?.addEventListener('click', () => {
-      openContactModal();
     });
 
     container.querySelector('#nav-login-btn')?.addEventListener('click', () => {
