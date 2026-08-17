@@ -151,46 +151,50 @@ function handleOptimize() {
   // Küçük gecikme ile UI güncellemesine izin ver
   requestAnimationFrame(() => {
     setTimeout(() => {
-      const { success, result, error } = runOptimization({
-        stockItems: project.stockItems,
-        cutPieces: project.cutPieces,
-        params: project.params,
-      });
-
-      if (success) {
-        lastResult = result;
-        project.lastResult = result;
-
-        // Sonuçları güncelle
-        resultsView.update(result);
-        visualizerView.update(result);
-
-        if (result.unplacedCount > 0) {
-          showToast(
-            i18n.t('toast.unplacedCuts', { count: result.unplacedCount }),
-            'warning'
-          );
-        } else {
-          showToast(
-            `${t('toast.optimizeSuccess')} — ${t('results.waste')}: %${result.totalWastePercentage.toFixed(1)}`,
-            result.totalWastePercentage < 10 ? 'success' : result.totalWastePercentage < 20 ? 'warning' : 'info'
-          );
-        }
-
-        // Sonuçlara scroll
-        document.getElementById('results-panel-root')?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
+      try {
+        const { success, result, error } = runOptimization({
+          stockItems: project.stockItems,
+          cutPieces: project.cutPieces,
+          params: project.params,
         });
-      } else {
-        showToast(t(`toast.${error}`) || t('toast.optimizeError'), 'error');
-      }
 
-      // Buton eski haline
-      btn.disabled = false;
-      btn.innerHTML = originalText;
-      btn.classList.add('btn--optimize-pulse');
-    }, 100);
+        if (success) {
+          lastResult = result;
+          project.lastResult = result;
+
+          // Sonuçları güncelle
+          resultsView.update(result);
+          visualizerView.update(result);
+
+          if (result.unplacedCount > 0) {
+            showToast(
+              i18n.t('toast.unplacedCuts', { count: result.unplacedCount }),
+              'warning'
+            );
+          } else {
+            showToast(
+              `${t('toast.optimizeSuccess')} — ${t('results.waste')}: %${result.totalWastePercentage.toFixed(1)}`,
+              result.totalWastePercentage < 10 ? 'success' : result.totalWastePercentage < 20 ? 'warning' : 'info'
+            );
+          }
+
+          // Sonuçlara scroll
+          document.getElementById('results-panel-root')?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        } else {
+          showToast(t(`errors.${error}`) || t('toast.optimizeError'), 'error');
+        }
+      } catch (err) {
+        console.error('Optimization error:', err);
+        showToast(t('toast.optimizeError'), 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        btn.classList.add('btn--optimize-pulse');
+      }
+    }, 30);
   });
 }
 

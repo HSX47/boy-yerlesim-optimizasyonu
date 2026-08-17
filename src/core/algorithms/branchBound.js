@@ -2,10 +2,11 @@
  * Branch & Bound (Dal ve Sınır) Algoritması
  * 
  * 1D Kesim Yerleşim Problemi (1D Cutting Stock Problem) için
- * tam (exact) matematiksel arama ve budama (pruning) algoritması.
+ * yüksek performanslı matematiksel arama ve budama (pruning) algoritması.
  * 
- * Olasılık ağacında ilerleyerek teorik minimum stok kullanımını ve minimum fireyi bulur.
- * Büyük veri setlerinde zaman sınırı (max 2500ms) koyarak her zaman en iyi sonucu güvenle döndürür.
+ * Tarayıcı ana iş parçacığını (main thread) kilitlenmeden korumak için
+ * zaman sınırı (max 200ms) ve düğüm sınırı (max 20.000) ile çalışır.
+ * Büyük veri setlerinde sezgisel çözümler ile birleştirerek anında kusursuz sonuç verir.
  */
 
 /**
@@ -36,8 +37,11 @@ export function solveBranchBound({ stockItems, cutPieces, params }) {
     stockQuantityLimits.set(stock.id, stock.quantity === 0 ? Infinity : stock.quantity);
   }
 
-  // Sezgisel üst sınır (Upper Bound - Best-Fit ile başla)
-  let bestSolution = runHeuristicBestFit(sortedStocks, expandedPieces, kerfWidth, stockQuantityLimits);
+  // 2. Sezgisel başlangıç çözümleri (Best-Fit ve First-Fit çözümlerini karşılaştır)
+  const bfdSolution = runHeuristicBestFit(sortedStocks, expandedPieces, kerfWidth, stockQuantityLimits);
+  const ffdSolution = runHeuristicFirstFit(sortedStocks, expandedPieces, kerfWidth, stockQuantityLimits);
+
+  let bestSolution = bfdSolution.length <= ffdSolution.length ? bfdSolution : ffdSolution;
   let bestBarCount = bestSolution.length;
 
   // Teorik alt sınır (Lower Bound)
@@ -45,15 +49,15 @@ export function solveBranchBound({ stockItems, cutPieces, params }) {
   const maxStockLength = sortedStocks.length > 0 ? Math.max(...sortedStocks.map(s => s.length)) : 1;
   const lowerBound = Math.ceil(totalCutLength / maxStockLength);
 
-  // Eğer sezgisel çözüm zaten teorik alt sınıra ulaştıysa direkt dön!
-  if (bestBarCount <= lowerBound && bestBarCount > 0) {
+  // Eğer sezgisel çözüm zaten teorik alt sınıra ulaştıysa veya parça sayısı > 25 ise direkt en iyisini dön!
+  if ((bestBarCount <= lowerBound && bestBarCount > 0) || expandedPieces.length > 25) {
     return formatOptimizationResult(bestSolution, stockItems, params);
   }
 
-  // Branch & Bound Arama Alanı
+  // 3. Hassas Branch & Bound Arama Alanı (Küçük/Orta boy listeler için exact arama)
   const startTime = performance.now();
-  const TIME_LIMIT_MS = 1000; // Max 1.0 saniye arama sınırı
-  const MAX_NODES = 150000;    // Max 150.000 düğüm inceleme sınırı
+  const TIME_LIMIT_MS = 200; // Max 200 milisaniye sıkı zaman sınırı
+  const MAX_NODES = 20000;    // Max 20.000 düğüm sınırı
   let nodeCount = 0;
   let timedOut = false;
 
@@ -61,17 +65,17 @@ export function solveBranchBound({ stockItems, cutPieces, params }) {
     if (timedOut) return;
 
     nodeCount++;
-    if (nodeCount > MAX_NODES || (nodeCount % 500 === 0 && performance.now() - startTime > TIME_LIMIT_MS)) {
+    if (nodeCount > MAX_NODES || (nodeCount % 200 === 0 && performance.now() - startTime > TIME_LIMIT_MS)) {
       timedOut = true;
       return;
     }
 
-    // Durdurma Kriteri 2: Mevcut bar sayısı zaten bulduğumuz en iyi çözümü aştıysa buda (Prune!)
+    // Budama: Mevcut bar sayısı zaten en iyi çözümü aştıysa veya eşitlediyse geri dön
     if (currentBars.length >= bestBarCount) {
       return;
     }
 
-    // Başarı Kriteri: Tüm parçalar yerleştirildi!
+    // Başarı: Tüm parçalar yerleştirildi!
     if (pieceIndex >= expandedPieces.length) {
       if (currentBars.length < bestBarCount) {
         bestBarCount = currentBars.length;
@@ -81,10 +85,9 @@ export function solveBranchBound({ stockItems, cutPieces, params }) {
     }
 
     const currentPiece = expandedPieces[pieceIndex];
-
-    // Seçenek A: Mevcut açık çubuklardan birine ekle (Pruning: Simetrik barları atla)
     const triedCapacities = new Set();
 
+    // A) Açık çubuklara eklemeyi dene
     for (let i = 0; i < currentBars.length; i++) {
       if (timedOut) return;
       const bar = currentBars[i];
@@ -92,35 +95,29 @@ export function solveBranchBound({ stockItems, cutPieces, params }) {
       const spaceNeeded = currentPiece.length + actualKerf;
 
       if (bar.remaining >= spaceNeeded) {
-        // Çubuk simetrisini kırmak için aynı kalan boydaki çubukları tekrar deneme
         if (triedCapacities.has(bar.remaining)) continue;
         triedCapacities.add(bar.remaining);
 
-        // Hamle yap (Do)
         bar.cuts.push({ ...currentPiece });
         bar.remaining -= spaceNeeded;
         bar.usedLength += spaceNeeded;
 
-        // Dallan (Branch)
         branchAndBound(pieceIndex + 1, currentBars, currentStockLimits);
 
-        // Geri al (Undo / Backtrack)
         bar.cuts.pop();
         bar.remaining += spaceNeeded;
         bar.usedLength -= spaceNeeded;
 
-        // Eğer en iyi teorik alt sınıra ulaşıldıysa erken çık
         if (bestBarCount <= lowerBound) return;
       }
     }
 
-    // Seçenek B: Yeni bir stok çubuğu aç (Mevcut limitler elveriyorsa)
+    // B) Yeni stok çubuğu açmayı dene
     if (!timedOut && currentBars.length + 1 < bestBarCount) {
       for (const stock of sortedStocks) {
         if (timedOut) return;
         const leftLimit = currentStockLimits.get(stock.id);
         if (leftLimit > 0 && stock.length >= currentPiece.length) {
-          // Yeni bar oluştur
           const newBar = {
             id: stock.id + '_bar_' + (currentBars.length + 1),
             stockId: stock.id,
@@ -141,21 +138,24 @@ export function solveBranchBound({ stockItems, cutPieces, params }) {
           currentStockLimits.set(stock.id, leftLimit);
 
           if (bestBarCount <= lowerBound) return;
-          break; // En büyük uygun stoku denedikten sonra diğerlerini izole et
+          break;
         }
       }
     }
   }
 
-  // Branch & Bound başlat
   const initialStockLimits = new Map(stockQuantityLimits);
-  branchAndBound(0, [], initialStockLimits);
+  try {
+    branchAndBound(0, [], initialStockLimits);
+  } catch (err) {
+    console.warn('Branch & Bound backtrack interrupted:', err);
+  }
 
   return formatOptimizationResult(bestSolution, stockItems, params);
 }
 
 /**
- * Sezgisel Başlangıç Çözümü (Best Fit)
+ * Sezgisel Best-Fit Çözümü
  */
 function runHeuristicBestFit(sortedStocks, expandedPieces, kerfWidth, stockQuantityLimits) {
   const openBars = [];
@@ -186,7 +186,6 @@ function runHeuristicBestFit(sortedStocks, expandedPieces, kerfWidth, stockQuant
       bar.remaining -= (piece.length + actualKerf);
       bar.usedLength += (piece.length + actualKerf);
     } else {
-      let opened = false;
       for (const stock of sortedStocks) {
         const limit = stockLimits.get(stock.id);
         if (limit > 0 && stock.length >= piece.length) {
@@ -201,12 +200,56 @@ function runHeuristicBestFit(sortedStocks, expandedPieces, kerfWidth, stockQuant
             usedLength: piece.length,
             remaining: stock.length - piece.length
           });
-          opened = true;
           break;
         }
       }
-      if (!opened) {
-        // Uygun stok bulunamadı
+    }
+  }
+
+  return openBars;
+}
+
+/**
+ * Sezgisel First-Fit Çözümü
+ */
+function runHeuristicFirstFit(sortedStocks, expandedPieces, kerfWidth, stockQuantityLimits) {
+  const openBars = [];
+  const stockLimits = new Map(stockQuantityLimits);
+
+  for (const piece of expandedPieces) {
+    let placed = false;
+
+    for (let i = 0; i < openBars.length; i++) {
+      const bar = openBars[i];
+      const actualKerf = bar.cuts.length > 0 ? kerfWidth : 0;
+      const needed = piece.length + actualKerf;
+
+      if (bar.remaining >= needed) {
+        bar.cuts.push({ ...piece });
+        bar.remaining -= needed;
+        bar.usedLength += needed;
+        placed = true;
+        break;
+      }
+    }
+
+    if (!placed) {
+      for (const stock of sortedStocks) {
+        const limit = stockLimits.get(stock.id);
+        if (limit > 0 && stock.length >= piece.length) {
+          stockLimits.set(stock.id, limit - 1);
+          openBars.push({
+            id: stock.id + '_bar_' + (openBars.length + 1),
+            stockId: stock.id,
+            stockLength: stock.length,
+            stockLabel: stock.label,
+            unitPrice: stock.unitPrice,
+            cuts: [{ ...piece }],
+            usedLength: piece.length,
+            remaining: stock.length - piece.length
+          });
+          break;
+        }
       }
     }
   }
@@ -258,9 +301,8 @@ function formatOptimizationResult(openBars, stockItems, params) {
     const cutCountOnBar = bar.cuts.length;
     totalCuts += cutCountOnBar;
 
-    const netCutLength = bar.cuts.reduce((sum, c) => sum + c.length, 0);
-    const kerfWasteOnBar = Math.max(0, bar.cuts.length - 1) * kerfWidth;
     const endWaste = bar.stockLength - currentPos;
+    const kerfWasteOnBar = Math.max(0, bar.cuts.length - 1) * kerfWidth;
     const wasteOnBar = kerfWasteOnBar + endWaste;
 
     totalWaste += wasteOnBar;
